@@ -1,6 +1,8 @@
-'use client'
+"use client"
+
 
 import { useState } from 'react'
+import Dashboard from './Dashboard'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -44,10 +46,7 @@ export default function Login() {
 
   if (loggedUser) {
     return (
-      <div>
-        <h2>Bienvenido, {loggedUser.name}</h2>
-        <button onClick={logout}>Cerrar sesión</button>
-      </div>
+        <Dashboard user={loggedUser} logout={logout} />
     )
   }
 
