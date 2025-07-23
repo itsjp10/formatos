@@ -29,6 +29,7 @@ model Formato {
   formatoID String   @id @default(uuid())
   tipo      String
   data      String
+  name String
   createdAt DateTime @default(now())
 
   usuarioId String
