@@ -1,11 +1,8 @@
 "use client"
 import { useState, useEffect } from 'react'
 import Sidebar, { SidebarItem } from './Sidebar'
-import {
-    Signature,
-    Settings,
-    Plus,
-} from "lucide-react"
+import { Signature, Plus } from "lucide-react"
+import Formato from './Formato'
 
 
 function Dashboard({ logout }) {
@@ -19,22 +16,25 @@ function Dashboard({ logout }) {
     const [selectedIdFormato, setSelectedIdFormato] = useState(null)
     const [formatoData, setFormatoData] = useState(null)
 
-    const tipos_formatos = ["Mampostería interna", "Mampostería fachada", "Durapanel-Zafarreo", "Instalaciones hidro-san", "Plantilla", "Pañete", "Cielo raso", "Estuco", "Pisos", "Enchapes"]
+    const tipos_formatos = [
+        "Mampostería interna", "Mampostería fachada", "Durapanel-Zafarreo",
+        "Instalaciones hidro-san", "Plantilla", "Pañete", "Cielo raso",
+        "Estuco", "Pisos", "Enchapes"
+    ]
 
     useEffect(() => {
         const fetchFormatos = async () => {
             setError('')
+            if (!usuario) return
             try {
                 const res = await fetch(`/api/formatos?usuarioId=${usuario.userID}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 })
-
                 if (!res.ok) {
                     const { error } = await res.json()
                     throw new Error(error || 'Error desconocido')
                 }
-
                 const formats = await res.json()
                 setFormatos(formats)
             } catch (err) {
@@ -43,48 +43,53 @@ function Dashboard({ logout }) {
         }
 
         fetchFormatos()
-    }, [usuario, pantalla])
+    }, [usuario])
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user")
-        if (storedUser) {
-            setUsuario(JSON.parse(storedUser))
-        }
+        if (storedUser) setUsuario(JSON.parse(storedUser))
         setLoading(false)
     }, [])
-
-    if (loading) return null
-
-    if (!usuario) return <p>No user was found</p>
 
     async function handleCrearFormato(tipoSeleccionado) {
         setError('')
         setLoading(true)
-        console.log(tipoSeleccionado)
+        const dataMamposteria = {
+            tipo: "Mampostería interna",
+            columnas: [
+                "CIMBRA", "ANCLAJE", "REF. NO ESTRUCTURAL - UBIC.", "REF. NO ESTRUCTURAL - TRASLAPO",
+                "REF. NO ESTRUCTURAL - DIAM.", "VIGA DINTEL - UBIC.", "VIGA DINTEL - TRASLAPO",
+                "VIGA DINTEL - DIAM.", "ALFAJIA - UBIC.", "ALFAJIA - TRASLAPO", "ALFAJIA - DIAM.",
+                "RELLENO DOVELAS", "DILATACIÓN", "ESPESOR JUNTAS", "EMBOQUILLADO",
+                "PLOMO Y HORIZONTALIDAD", "ESCUADRA", "TRABA"
+            ],
+            filas: [],
+            observaciones: "",
+            firmadoPor: ""
+        }
         const nuevoFormato = {
             tipo: tipoSeleccionado,
-            data: `Este es el contenido del formato para ${tipoSeleccionado}`,
+            data: JSON.stringify(dataMamposteria),
             name: tipoSeleccionado,
-            usuarioId: usuario.userID, // O desde localStorage si es necesario
+            usuarioId: usuario.userID,
         }
-
         try {
             const res = await fetch('/api/formatos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevoFormato),
             })
-
             if (!res.ok) {
                 const { error } = await res.json()
                 throw new Error(error || 'Error al crear formato')
             }
-
             const formatoCreado = await res.json()
-            console.log('Formato creado:', formatoCreado)    
             setFormatos(prev => [...prev, formatoCreado])
             setSelectedIdFormato(formatoCreado.formatoID)
-            setActiveSidebarItem(formatoCreado.formatoID)       
+            setActiveSidebarItem(formatoCreado.formatoID)
+            setFormatoData(JSON.parse(formatoCreado.data))
+            setTipoFormato(formatoCreado.tipo)
+            setPantalla("Formato")
         } catch (err) {
             setError(err.message)
         } finally {
@@ -93,10 +98,38 @@ function Dashboard({ logout }) {
     }
 
     const handleSeleccionarFormato = (formatoID) => {
-        setSelectedIdFormato(formatoID)
-        setActiveSidebarItem(formatoID)
-        setPantalla("Formato")
+        const formato = formatos.find(f => f.formatoID === formatoID)
+        if (formato) {
+            setFormatoData(JSON.parse(formato.data))
+            setTipoFormato(formato.tipo)
+            setSelectedIdFormato(formatoID)
+            setActiveSidebarItem(formatoID)
+            setPantalla("Formato")
+        }
     }
+
+    async function handleGuardarFormato(dataActualizada) {
+        setLoading(true)
+        setError('')
+        try {
+            const res = await fetch(`/api/formatos/${selectedIdFormato}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: JSON.stringify(dataActualizada) }),
+            })
+            if (!res.ok) {
+                const { error } = await res.json()
+                throw new Error(error || 'Error al guardar formato')
+            }
+            setFormatoData(dataActualizada)
+        } catch (err) {
+            setError(err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    if (!usuario) return <p>No user was found</p>
 
     return (
         <div className="flex bg-white min-h-screen">
@@ -105,7 +138,7 @@ function Dashboard({ logout }) {
                     icon={<Plus size={20} />}
                     text="Nuevo formato"
                     active={activeSidebarItem === "Nuevo formato"}
-                    onClick={() => setPantalla("")}
+                    onClick={() => { setPantalla(""); setActiveSidebarItem("Nuevo formato"); }}
                 />
                 <SidebarItem
                     icon={<Signature size={20} />}
@@ -135,29 +168,27 @@ function Dashboard({ logout }) {
                         <h1 className='text-black text-[26px] '>Seleccione un formato para empezar</h1>
                         <select
                             className="mt-6 p-2 border rounded text-black"
-                            value={activeSidebarItem || ""}
-                            onChange={e => {
-                                const tipo = e.target.value
-                                setTipoFormato(tipo)
-                                handleCrearFormato(tipo)                                
-                                {/*setActiveSidebarItem(e.target.value)*/}
-                                setPantalla("Formato")
-
-                            }}
+                            value=""
+                            onChange={e => handleCrearFormato(e.target.value)}
                         >
                             <option value="" disabled>Elige un formato...</option>
                             {tipos_formatos.map((tipo, index) => (
-                                <option key={index} value={tipo}>
-                                    {tipo}
-                                </option>
+                                <option key={index} value={tipo}>{tipo}</option>
                             ))}
-
-
                         </select>
                     </div>
                 )}
                 {pantalla === "Formato" && (
-                    <h1 className='text-black'>This is Formato's screen</h1>
+                    <div className="p-4 text-black w-full max-w-5xl">
+                        <h1 className="mb-4 text-2xl font-bold">Formato: {tipoFormato}</h1>
+                        <Formato
+                            tipoFormato={tipoFormato}
+                            contenidoFormato={formatoData}
+                            onGuardar={handleGuardarFormato}
+                            loading={loading}
+                        />
+                        {error && <div className="mt-2 text-red-500">{error}</div>}
+                    </div>
                 )}
             </div>
         </div>
