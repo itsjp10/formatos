@@ -23,6 +23,7 @@ model Usuario {
 
   formatos  Formato[]
   firmas    Firma[]
+  plantillas PlantillaFormato[]
 }
 
 model Formato {
@@ -34,6 +35,9 @@ model Formato {
 
   usuarioId String
   ownerID   Usuario  @relation(fields: [usuarioId], references: [userID])
+
+  plantillaID String?
+  plantilla   PlantillaFormato? @relation("PlantillaDeFormato", fields: [plantillaID], references: [plantillaID])
 
   firmas    Firma[]  // Relación uno a muchos
 }
@@ -50,3 +54,20 @@ model Firma {
   formatoId  String
   formato    Formato  @relation(fields: [formatoId], references: [formatoID])
 }
+
+model PlantillaFormato {
+  plantillaID String   @id @default(uuid())
+  nombre      String
+  descripcion String?
+  estructura  Json     // Campos configurables como labels, tipos, etc.
+  createdAt   DateTime @default(now())
+
+  creadoPorId String
+  creadoPor   Usuario  @relation(fields: [creadoPorId], references: [userID])
+
+  formatos    Formato[] @relation("PlantillaDeFormato") // <--- Campo inverso
+}
+
+
+
+

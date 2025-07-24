@@ -1,8 +1,9 @@
 "use client"
 import { useState, useEffect } from 'react'
 import Sidebar, { SidebarItem } from './Sidebar'
-import { Signature, Plus } from "lucide-react"
+import { Signature, Plus, LayoutTemplate } from "lucide-react"
 import Formato from './Formato'
+import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
 
 
 function Dashboard({ logout }) {
@@ -15,6 +16,8 @@ function Dashboard({ logout }) {
     const [tipoFormato, setTipoFormato] = useState('')
     const [selectedIdFormato, setSelectedIdFormato] = useState(null)
     const [formatoData, setFormatoData] = useState(null)
+
+
 
     const tipos_formatos = [
         "Mampostería interna", "Mampostería fachada", "Durapanel-Zafarreo",
@@ -152,8 +155,16 @@ function Dashboard({ logout }) {
                     icon={<Signature size={20} />}
                     text="Mis firmas"
                     active={activeSidebarItem === "Mis firmas"}
-                    onClick={() => setActiveSidebarItem("Mis firmas")}
+                    onClick={() => { setPantalla("Mis firmas"); setActiveSidebarItem("Mis firmas") }}
                 />
+                {usuario.role === 'residente' && (<SidebarItem
+                    icon={<LayoutTemplate size={20} />}
+                    text="Crear plantilla"
+                    active={activeSidebarItem === "Crear plantilla"}
+                    onClick={() => { setPantalla("Crear plantilla"); setActiveSidebarItem("Crear plantilla"); }}
+                />)
+
+                }
                 <hr className="my-3" />
                 <SidebarItem
                     text="Formatos"
@@ -196,6 +207,14 @@ function Dashboard({ logout }) {
                             loading={loading}
                         />
                         {error && <div className="mt-2 text-red-500">{error}</div>}
+                    </div>
+                )}
+                {pantalla === "Crear plantilla" && (
+                    <EditorPlantilla usuarioId={usuario.userID} />
+                )}
+                {pantalla === "Mis firmas" && (
+                    <div className='text-black'>
+                        <h1>This is screen to show all signatures</h1>
                     </div>
                 )}
             </div>
