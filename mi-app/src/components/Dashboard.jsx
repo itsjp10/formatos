@@ -121,7 +121,15 @@ function Dashboard({ logout }) {
                 const { error } = await res.json()
                 throw new Error(error || 'Error al guardar formato')
             }
+            // Actualiza el formato en el estado local
             setFormatoData(dataActualizada)
+            setFormatos(prev =>
+                prev.map(f =>
+                    f.formatoID === selectedIdFormato
+                        ? { ...f, data: JSON.stringify(dataActualizada) }
+                        : f
+                )
+            )
         } catch (err) {
             setError(err.message)
         } finally {

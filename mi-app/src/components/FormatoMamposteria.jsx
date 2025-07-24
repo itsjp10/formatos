@@ -1,120 +1,129 @@
-"use client";
-import { useState, useEffect } from "react";
+"use client"
+import { useState } from 'react'
+import React from 'react';
 
-function FormatoMamposteria({ contenido, onGuardar, loading }) {
-  const [data, setData] = useState(
-    contenido || {
-      columnas: [],
-      filas: [],
-      observaciones: "",
-      firmadoPor: ""
-    }
-  );
+export default function FormatoMamposteria({ rol }) {
+  const [filas, setFilas] = useState(Array(7).fill({
+    espacio: '',
+    fecha: '',
+    criterios: Array(10).fill({ c: false, nc: false }),
+    observaciones: '',
+    firma: ''
+  }))
 
-  useEffect(() => {
-    setData(
-      contenido || { columnas: [], filas: [], observaciones: "", firmadoPor: "" }
-    );
-  }, [contenido]);
-
-  // Añadir fila vacía
-  const handleAddRow = () => {
-    setData((prev) => ({
-      ...prev,
-      filas: [...prev.filas, Array(prev.columnas.length).fill("")]
-    }));
-  };
-
-  // Editar celda
-  const handleCellChange = (rowIdx, colIdx, value) => {
-    const newFilas = data.filas.map((fila, i) =>
-      i === rowIdx
-        ? fila.map((cell, j) => (j === colIdx ? value : cell))
-        : fila
-    );
-    setData((prev) => ({ ...prev, filas: newFilas }));
-  };
-
-  // Editar observaciones
-  const handleObsChange = (e) => {
-    setData((prev) => ({ ...prev, observaciones: e.target.value }));
-  };
-
-  // Guardar cambios
-  const handleGuardar = () => {
-    if (onGuardar) onGuardar(data);
-  };
+  const agregarFila = () => {
+    setFilas(prev => [...prev, {
+      espacio: '',
+      fecha: '',
+      criterios: Array(10).fill({ c: false, nc: false }),
+      observaciones: '',
+      firma: ''
+    }])
+  }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-indigo-700">
-          Liberación de actividades: Mampostería interna
-        </h2>
-        <button
-          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition disabled:opacity-50"
-          onClick={handleGuardar}
-          disabled={loading}
-        >
-          {loading ? "Guardando..." : "Guardar cambios"}
-        </button>
+    <div className="p-6 bg-white text-black max-w-full overflow-x-auto text-sm">
+      <h2 className="text-xl font-bold text-center mb-6">
+        FORMATO DE LIBERACIÓN DE ACTIVIDADES - MAMPOSTERÍA INTERNA
+      </h2>
+
+      {/* Encabezado */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <input placeholder="OBRA" className="border p-2" />
+        <input placeholder="FECHA" className="border p-2" />
+        <input placeholder="HOJA Nº" className="border p-2" />
+        <input placeholder="ELABORADO POR" className="border p-2" />
+        <input placeholder="TORRE" className="border p-2" />
+        <input placeholder="PISO" className="border p-2" />
+        <input placeholder="CONTRATISTA" className="border p-2" />
+        <input placeholder="RESIDENTE DE OBRA" className="border p-2" />
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 rounded-lg">
-          <thead>
-            <tr className="bg-indigo-100">
-              <th className="p-2 border text-xs font-semibold">#</th>
-              {data.columnas.map((col, idx) => (
-                <th key={idx} className="p-2 border text-xs font-semibold">
-                  {col}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.filas.map((fila, rowIdx) => (
-              <tr key={rowIdx} className="hover:bg-indigo-50">
-                <td className="p-2 border text-xs text-gray-500">
-                  {rowIdx + 1}
-                </td>
-                {fila.map((cell, colIdx) => (
-                  <td key={colIdx} className="p-1 border">
-                    <input
-                      type="text"
-                      value={cell}
-                      onChange={(e) =>
-                        handleCellChange(rowIdx, colIdx, e.target.value)
-                      }
-                      className="w-full px-2 py-1 text-xs border rounded focus:outline-none focus:ring focus:ring-indigo-200"
-                    />
-                  </td>
-                ))}
-              </tr>
+
+      {/* Tabla */}
+      <table className="w-full border text-center text-xs">
+        <thead>
+          <tr className="bg-gray-200">
+            <th rowSpan={2} className="border px-2 py-1">ESPACIO</th>
+            <th rowSpan={2} className="border px-2 py-1">FECHA - RECIBIDO</th>
+            {[
+              "1. CIMBRA", "2. ANCLAJE", "3. REFUERZO NO ESTRUCTURAL",
+              "4. VIGA DINTEL", "5. ALFAJÍA", "6. RELLENO DOVELAS",
+              "7. DILATACIÓN", "8. ESPESOR DE JUNTAS", "9. EMBOQUILLADO",
+              "10. PLOMO Y HORIZONTALIDAD"
+            ].map((criterio, i) => (
+              <th key={i} colSpan={2} className="border px-2 py-1">{criterio}</th>
             ))}
-          </tbody>
-        </table>
+            <th rowSpan={2} className="border px-2 py-1">OBSERVACIONES</th>
+            <th rowSpan={2} className="border px-2 py-1">FIRMA</th>
+          </tr>
+          <tr className="bg-gray-100">
+            {Array(10).fill(null).flatMap((_, i) => [
+              <th key={`c-${i}`} className="border px-2 py-1">C</th>,
+              <th key={`nc-${i}`} className="border px-2 py-1">NC</th>
+            ])}
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((fila, rowIndex) => (
+            <tr key={rowIndex}>
+              <td className="border p-1">
+                <input className="w-full p-1" placeholder="Espacio" />
+              </td>
+              <td className="border p-1">
+                <input className="w-full p-1" placeholder="Fecha" />
+              </td>
+              {fila.criterios.map((_, i) => (
+                <React.Fragment key={i}>
+                  <td className="border p-1">
+                    <input type="checkbox" className="mx-auto" />
+                  </td>
+                  <td className="border p-1">
+                    <input type="checkbox" className="mx-auto" />
+                  </td>
+                </React.Fragment>
+              ))}
+              <td className="border p-1">
+                <input className="w-full p-1" placeholder="Observaciones" />
+              </td>
+              <td className="border p-1">
+                <input className="w-full p-1" placeholder="Firma" disabled />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Botón para agregar fila */}
+      <div className="mt-4 text-right">
         <button
-          className="mt-3 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-          onClick={handleAddRow}
+          onClick={agregarFila}
+          className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 transition"
         >
-          Añadir fila
+          + Agregar fila
         </button>
       </div>
-      <div className="mt-6">
-        <label className="block text-sm font-semibold mb-1 text-indigo-700">
-          Observaciones:
-        </label>
-        <textarea
-          value={data.observaciones}
-          onChange={handleObsChange}
-          rows={3}
-          className="w-full border rounded p-2 text-sm focus:outline-none focus:ring focus:ring-indigo-200"
-          placeholder="Escribe observaciones aquí..."
-        />
+
+      {/* Sección de firmas */}
+      <div className="grid grid-cols-3 gap-4 mt-10 text-center">
+        <div className="border-t pt-2">
+          {rol === 'contratista' && (
+            <button className="bg-blue-600 text-white px-4 py-1 rounded mb-2">Firmar</button>
+          )}
+          <div>CONTRATISTA</div>
+        </div>
+        <div className="border-t pt-2">
+          {rol === 'residente' && (
+            <button className="bg-blue-600 text-white px-4 py-1 rounded mb-2">Firmar</button>
+          )}
+          <div>RESIDENTE DE TORRE</div>
+        </div>
+        <div className="border-t pt-2">
+          {rol === 'supervisor' && (
+            <button className="bg-blue-600 text-white px-4 py-1 rounded mb-2">Firmar</button>
+          )}
+          <div>SUPERVISIÓN TÉCNICA</div>
+        </div>
       </div>
     </div>
-  );
+  )
 }
-
-export default FormatoMamposteria;
-                 
