@@ -17,7 +17,8 @@ function Dashboard({ logout }) {
     const [selectedIdFormato, setSelectedIdFormato] = useState(null)
     const [formatoData, setFormatoData] = useState(null)
 
-
+    // Tipos de formatos disponibles
+    const [tiposFormatos, setTiposFormatos] = useState([])
 
     const tipos_formatos = [
         "Mampostería interna", "Mampostería fachada", "Durapanel-Zafarreo",
@@ -54,51 +55,71 @@ function Dashboard({ logout }) {
         setLoading(false)
     }, [])
 
+    useEffect(() => {
+        const fetchTipoFormatos = async () => {
+            setError('')
+            if (!usuario) return
+            try {
+                const res = await fetch('/api/plantillas')
+                if (!res.ok) {
+                    const { error } = await res.json()
+                    throw new Error(error || 'Error desconocido')
+                }
+                console.log('Fetching tipos de formatos...')
+                const plantillas = await res.json()
+                setTiposFormatos(plantillas)
+                console.log('Tipos de formatos:', tiposFormatos)
+            } catch (err) {
+                setError(err.message)
+            }
+        }
+        fetchTipoFormatos()
+    }, [usuario])
+
     async function handleCrearFormato(tipoSeleccionado) {
-        setError('')
-        setLoading(true)
-        const dataMamposteria = {
-            tipo: "Mampostería interna",
-            columnas: [
-                "CIMBRA", "ANCLAJE", "REF. NO ESTRUCTURAL - UBIC.", "REF. NO ESTRUCTURAL - TRASLAPO",
-                "REF. NO ESTRUCTURAL - DIAM.", "VIGA DINTEL - UBIC.", "VIGA DINTEL - TRASLAPO",
-                "VIGA DINTEL - DIAM.", "ALFAJIA - UBIC.", "ALFAJIA - TRASLAPO", "ALFAJIA - DIAM.",
-                "RELLENO DOVELAS", "DILATACIÓN", "ESPESOR JUNTAS", "EMBOQUILLADO",
-                "PLOMO Y HORIZONTALIDAD", "ESCUADRA", "TRABA"
-            ],
-            filas: [],
-            observaciones: "",
-            firmadoPor: ""
-        }
-        const nuevoFormato = {
-            tipo: tipoSeleccionado,
-            data: JSON.stringify(dataMamposteria),
-            name: tipoSeleccionado,
-            usuarioId: usuario.userID,
-        }
+        setError('');
+        setLoading(true);
+
         try {
+            const plantilla = tiposFormatos.find(p => p.nombre === tipoSeleccionado);
+
+            if (!plantilla) {
+                throw new Error('No se encontró la plantilla seleccionada');
+            }
+
+            const nuevoFormato = {
+                tipo: plantilla.nombre,
+                data: JSON.stringify(plantilla.estructura),
+                name: plantilla.nombre,
+                usuarioId: usuario.userID,
+            };
+
             const res = await fetch('/api/formatos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevoFormato),
-            })
+            });
+
             if (!res.ok) {
-                const { error } = await res.json()
-                throw new Error(error || 'Error al crear formato')
+                const { error } = await res.json();
+                throw new Error(error || 'Error al crear formato');
             }
-            const formatoCreado = await res.json()
-            setFormatos(prev => [...prev, formatoCreado])
-            setSelectedIdFormato(formatoCreado.formatoID)
-            setActiveSidebarItem(formatoCreado.formatoID)
-            setFormatoData(JSON.parse(formatoCreado.data))
-            setTipoFormato(formatoCreado.tipo)
-            setPantalla("Formato")
+
+            const formatoCreado = await res.json();
+
+            setFormatos(prev => [...prev, formatoCreado]);
+            setSelectedIdFormato(formatoCreado.formatoID);
+            setActiveSidebarItem(formatoCreado.formatoID);
+            setFormatoData(JSON.parse(formatoCreado.data));
+            setTipoFormato(formatoCreado.tipo);
+            setPantalla("Formato");
         } catch (err) {
-            setError(err.message)
+            setError(err.message);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
+
 
     const handleSeleccionarFormato = (formatoID) => {
         const formato = formatos.find(f => f.formatoID === formatoID)
@@ -183,6 +204,7 @@ function Dashboard({ logout }) {
             </Sidebar>
             <div className="flex-1 flex items-center justify-center">
                 {pantalla === "" && (
+                    console.log('FormatosPlantillas:', tiposFormatos) ||
                     <div className="flex flex-col items-center">
                         <h1 className='text-black text-[26px] '>Seleccione un formato para empezar</h1>
                         <select
@@ -191,8 +213,8 @@ function Dashboard({ logout }) {
                             onChange={e => handleCrearFormato(e.target.value)}
                         >
                             <option value="" disabled>Elige un formato...</option>
-                            {tipos_formatos.map((tipo, index) => (
-                                <option key={index} value={tipo}>{tipo}</option>
+                            {tiposFormatos.map((tipo, index) => (
+                                <option key={tipo.plantillaID} value={tipo.nombre}>{tipo.nombre}</option>
                             ))}
                         </select>
                     </div>
@@ -210,7 +232,25 @@ function Dashboard({ logout }) {
                     </div>
                 )}
                 {pantalla === "Crear plantilla" && (
-                    <EditorPlantilla usuarioId={usuario.userID} />
+                    <EditorPlantilla usuarioId={usuario.userID} onCrearPlantilla={async (plantilla) => {
+                        try {
+                            const res = await fetch('/api/plantillas', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ ...plantilla, creadoPorId: usuario.userID }),
+                            });
+
+                            if (!res.ok) {
+                                const { error } = await res.json();
+                                throw new Error(error || 'Error al crear plantilla');
+                            }
+
+                            const data = await res.json();
+                            alert('Plantilla creada correctamente');
+                        } catch (err) {
+                            alert(`Error: ${err.message}`);
+                        }
+                    }} />
                 )}
                 {pantalla === "Mis firmas" && (
                     <div className='text-black'>

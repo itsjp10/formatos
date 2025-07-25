@@ -119,6 +119,7 @@ function EditorPlantilla({ onCrearPlantilla }) {
       nombre: nombreFormato.trim(),
       descripcion: descripcionFormato.trim(),
       estructura,
+      numSubfilas: numSubfilas,
     };
 
     // Callback para enviar al backend o a donde quieras

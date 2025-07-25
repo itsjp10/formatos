@@ -60,6 +60,7 @@ model PlantillaFormato {
   nombre      String
   descripcion String?
   estructura  Json     // Campos configurables como labels, tipos, etc.
+  numSubfilas  Int      @default(3) // <-- nuevo campo
   createdAt   DateTime @default(now())
 
   creadoPorId String
