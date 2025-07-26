@@ -1,32 +1,20 @@
-import { set } from 'date-fns';
 import { useState } from 'react';
 
 function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
     const [data, setData] = useState(contenidoFormato || {});
-
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
     const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
 
-
     const handleGuardar = () => {
-        //const actualizado = { ...data, observaciones };
         setData({ filas: rows, columnas: headers, numSubfilas: numSubfilas });
         onGuardar(data);
     };
 
-    if (!data || !data.columnas || !data.filas) {
-        console.log("Estructura recibida en Formato.jsx:", data);
-        return <div className='text-black'>No hay estructura cargada para este formato.</div>;
-    }
-
     const addRow = () => {
         const newRow = {};
         headers.forEach((header) => {
-            const keys =
-                header.subheaders && header.subheaders.length > 0
-                    ? header.subheaders
-                    : [header.label];
+            const keys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
             keys.forEach((key) => {
                 for (let i = 0; i < numSubfilas; i++) {
                     const fullKey = `${header.label}-${key}-${i}`;
@@ -49,6 +37,10 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
         setRows(updated);
     };
 
+    const isSimpleField = (label) => ['APTO', 'OBSERVACIONES'].includes(label);
+    const isDateField = (label) => label === 'FECHA';
+    const isSignatureField = (label) => label === 'FIRMA';
+
     return (
         <div className="overflow-auto">
             <button
@@ -61,41 +53,55 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     <tr>
+                        {headers.map((header, i) => {
+                            if (header.subheaders?.length > 0) {
+                                return (
+                                    <th
+                                        key={i}
+                                        colSpan={header.subheaders.length * 2}
+                                        className="border bg-gray-200 px-2 py-1 text-center"
+                                    >
+                                        {header.label}
+                                    </th>
+                                );
+                            }
+                            return (
+                                <th
+                                    key={i}
+                                    rowSpan={3}
+                                    className="border bg-gray-200 px-2 py-1 text-center"
+                                >
+                                    {header.label}
+                                </th>
+                            );
+                        })}
+                    </tr>
+                    <tr>
                         {headers.map((header, i) =>
-                            header.subheaders?.length > 0 ? (
-                                <th
-                                    key={i}
-                                    colSpan={header.subheaders.length}
-                                    className="border bg-gray-200 px-2 py-1 text-center"
-                                >
-                                    <div className="flex justify-between items-center gap-1">
-                                        <span className="flex-1">{header.label}</span>
-                                    </div>
-                                </th>
-                            ) : (
-                                <th
-                                    key={i}
-                                    rowSpan={2}
-                                    className="border bg-gray-200 px-2 py-1 text-center"
-                                >
-                                    <div className="flex justify-between items-center gap-1">
-                                        <span className="flex-1">{header.label}</span>
-                                    </div>
-                                </th>
-                            )
+                            header.subheaders?.length > 0
+                                ? header.subheaders.map((sub, j) => (
+                                      <th
+                                          key={`sub-${i}-${j}`}
+                                          colSpan={2}
+                                          className="border bg-gray-100 px-2 py-1 text-center"
+                                      >
+                                          {sub}
+                                      </th>
+                                  ))
+                                : null
                         )}
                     </tr>
                     <tr>
-                        {headers.map((header) =>
+                        {headers.map((header, i) =>
                             header.subheaders?.length > 0
-                                ? header.subheaders.map((sub, i) => (
-                                    <th
-                                        key={i}
-                                        className="border bg-gray-100 px-2 py-1 text-center"
-                                    >
-                                        {sub}
-                                    </th>
-                                ))
+                                ? header.subheaders.flatMap((sub, j) => [
+                                      <th key={`c-${i}-${j}`} className="border text-center bg-gray-50">
+                                          C
+                                      </th>,
+                                      <th key={`nc-${i}-${j}`} className="border text-center bg-gray-50">
+                                          NC
+                                      </th>
+                                  ])
                                 : null
                         )}
                     </tr>
@@ -105,16 +111,12 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                         [...Array(numSubfilas)].map((_, subIndex) => (
                             <tr key={`${rowIndex}-${subIndex}`}>
                                 {headers.map((header, hIndex) => {
-                                    const isTextField = ['APTO', 'OBSERVACIONES'].includes(header.label);
-                                    const isDateField = header.label === 'FECHA';
-                                    const keys = header.subheaders?.length
-                                        ? header.subheaders
-                                        : [header.label];
+                                    const keys = header.subheaders?.length ? header.subheaders : [header.label];
 
                                     return keys.map((key, kIndex) => {
                                         const fullKey = `${header.label}-${key}-${subIndex}`;
 
-                                        if (isTextField && subIndex === 0) {
+                                        if (isSimpleField(header.label) && subIndex === 0) {
                                             return (
                                                 <td
                                                     key={`${hIndex}-${kIndex}`}
@@ -137,39 +139,46 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                             );
                                         }
 
-                                        if (isTextField) return null;
+                                        if (isSimpleField(header.label)) return null;
 
-                                        return (
-                                            <td key={`${hIndex}-${kIndex}`} className="border px-2 py-1 text-center">
-                                                {isDateField || header.label === 'FIRMA' ? (
+                                        if (isDateField(header.label) || isSignatureField(header.label)) {
+                                            return (
+                                                <td
+                                                    key={`${hIndex}-${kIndex}`}
+                                                    className="border px-2 py-1 text-center"
+                                                >
                                                     <input
                                                         type="text"
                                                         value={row[fullKey] || ''}
                                                         onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
                                                         className="w-full border-none outline-none"
                                                     />
-                                                ) : (
-                                                    <div className="flex justify-center gap-2">
-                                                        <label className="flex items-center text-sm">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={row[fullKey] === 'C'}
-                                                                onChange={() => toggleCheckbox(rowIndex, fullKey, 'C')}
-                                                            />
-                                                            <span className="ml-1">C</span>
-                                                        </label>
-                                                        <label className="flex items-center text-sm">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={row[fullKey] === 'NC'}
-                                                                onChange={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
-                                                            />
-                                                            <span className="ml-1">NC</span>
-                                                        </label>
-                                                    </div>
-                                                )}
+                                                </td>
+                                            );
+                                        }
+
+                                        return [
+                                            <td
+                                                key={`c-${hIndex}-${kIndex}`}
+                                                className="border px-2 py-1 text-center bg-gray-100"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={row[fullKey] === 'C'}
+                                                    onChange={() => toggleCheckbox(rowIndex, fullKey, 'C')}
+                                                />
+                                            </td>,
+                                            <td
+                                                key={`nc-${hIndex}-${kIndex}`}
+                                                className="border px-2 py-1 text-center bg-gray-100"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={row[fullKey] === 'NC'}
+                                                    onChange={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
+                                                />
                                             </td>
-                                        );
+                                        ];
                                     });
                                 })}
                             </tr>
@@ -184,7 +193,6 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
             >
                 Añadir fila
             </button>
-
         </div>
     );
 }
