@@ -1,18 +1,18 @@
+import { set } from 'date-fns';
 import { useState } from 'react';
 
 function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
     const [data, setData] = useState(contenidoFormato || {});
-    const [observaciones, setObservaciones] = useState(data.observaciones || "");
 
-    const handleCheckboxChange = (filaIndex, colKey, subfilaIndex, value) => {
-        const updated = { ...data };
-        updated.filas[filaIndex].celdas[colKey][subfilaIndex] = value;
-        setData(updated);
-    };
+    const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
+    const [rows, setRows] = useState(contenidoFormato.filas || []);
+    const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
+
 
     const handleGuardar = () => {
-        const actualizado = { ...data, observaciones };
-        onGuardar(actualizado);
+        //const actualizado = { ...data, observaciones };
+        setData({ filas: rows, columnas: headers, numSubfilas: numSubfilas });
+        onGuardar(data);
     };
 
     if (!data || !data.columnas || !data.filas) {
@@ -20,103 +20,171 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
         return <div className='text-black'>No hay estructura cargada para este formato.</div>;
     }
 
+    const addRow = () => {
+        const newRow = {};
+        headers.forEach((header) => {
+            const keys =
+                header.subheaders && header.subheaders.length > 0
+                    ? header.subheaders
+                    : [header.label];
+            keys.forEach((key) => {
+                for (let i = 0; i < numSubfilas; i++) {
+                    const fullKey = `${header.label}-${key}-${i}`;
+                    newRow[fullKey] = '';
+                }
+            });
+        });
+        setRows([...rows, newRow]);
+    };
+
+    const updateCell = (rowIndex, key, value) => {
+        const updated = [...rows];
+        updated[rowIndex][key] = value;
+        setRows(updated);
+    };
+
+    const toggleCheckbox = (rowIndex, key, value) => {
+        const updated = [...rows];
+        updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
+        setRows(updated);
+    };
+
     return (
-        <div className="bg-white text-black p-4 border rounded-md">
-            <h2 className="text-xl font-bold mb-4">{tipoFormato}</h2>
-            <table className="w-full border border-gray-300">
+        <div className="overflow-auto">
+            <button
+                type="button"
+                className="bg-green-500 text-white px-3 py-1 rounded text-sm cursor-pointer mb-4"
+                onClick={handleGuardar}
+            >
+                Guardar cambios
+            </button>
+            <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     <tr>
-                        {data.columnas.map((col, i) => (
-                            <th key={i} className="border px-2 py-1 text-sm">{col.nombre}</th>
-                        ))}
+                        {headers.map((header, i) =>
+                            header.subheaders?.length > 0 ? (
+                                <th
+                                    key={i}
+                                    colSpan={header.subheaders.length}
+                                    className="border bg-gray-200 px-2 py-1 text-center"
+                                >
+                                    <div className="flex justify-between items-center gap-1">
+                                        <span className="flex-1">{header.label}</span>
+                                    </div>
+                                </th>
+                            ) : (
+                                <th
+                                    key={i}
+                                    rowSpan={2}
+                                    className="border bg-gray-200 px-2 py-1 text-center"
+                                >
+                                    <div className="flex justify-between items-center gap-1">
+                                        <span className="flex-1">{header.label}</span>
+                                    </div>
+                                </th>
+                            )
+                        )}
+                    </tr>
+                    <tr>
+                        {headers.map((header) =>
+                            header.subheaders?.length > 0
+                                ? header.subheaders.map((sub, i) => (
+                                    <th
+                                        key={i}
+                                        className="border bg-gray-100 px-2 py-1 text-center"
+                                    >
+                                        {sub}
+                                    </th>
+                                ))
+                                : null
+                        )}
                     </tr>
                 </thead>
                 <tbody>
-                    {data.filas.map((fila, filaIndex) => (
-                        <tr key={filaIndex}>
-                            {data.columnas.map((col, colIndex) => {
-                                const celda = fila.celdas[col.nombre];
+                    {rows.map((row, rowIndex) =>
+                        [...Array(numSubfilas)].map((_, subIndex) => (
+                            <tr key={`${rowIndex}-${subIndex}`}>
+                                {headers.map((header, hIndex) => {
+                                    const isTextField = ['APTO', 'OBSERVACIONES'].includes(header.label);
+                                    const isDateField = header.label === 'FECHA';
+                                    const keys = header.subheaders?.length
+                                        ? header.subheaders
+                                        : [header.label];
 
-                                // Celdas con subfilas (array de objetos)
-                                if (Array.isArray(celda)) {
-                                    return (
-                                        <td key={colIndex} className="border px-2 py-1">
-                                            {celda.map((item, subfilaIndex) => (
-                                                <div key={subfilaIndex} className="flex gap-1 items-center mb-1">
-                                                    <label className="flex items-center gap-1 text-xs">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={item.C}
-                                                            onChange={() => {
-                                                                const updated = [...celda];
-                                                                updated[subfilaIndex] = {
-                                                                    ...updated[subfilaIndex],
-                                                                    C: !item.C,
-                                                                };
-                                                                handleCheckboxChange(filaIndex, col.nombre, subfilaIndex, updated[subfilaIndex]);
-                                                            }}
-                                                        />
-                                                        C
-                                                    </label>
-                                                    <label className="flex items-center gap-1 text-xs">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={item.NC}
-                                                            onChange={() => {
-                                                                const updated = [...celda];
-                                                                updated[subfilaIndex] = {
-                                                                    ...updated[subfilaIndex],
-                                                                    NC: !item.NC,
-                                                                };
-                                                                handleCheckboxChange(filaIndex, col.nombre, subfilaIndex, updated[subfilaIndex]);
-                                                            }}
-                                                        />
-                                                        NC
-                                                    </label>
-                                                </div>
-                                            ))}
-                                        </td>
-                                    );
-                                }
+                                    return keys.map((key, kIndex) => {
+                                        const fullKey = `${header.label}-${key}-${subIndex}`;
 
-                                // Celdas de texto o fecha
-                                return (
-                                    <td key={colIndex} className="border px-2 py-1">
-                                        <input
-                                            className="w-full text-xs border p-1"
-                                            type={col.tipo === "fecha" ? "date" : "text"}
-                                            value={celda}
-                                            onChange={(e) => {
-                                                const updated = { ...data };
-                                                updated.filas[filaIndex].celdas[col.nombre] = e.target.value;
-                                                setData(updated);
-                                            }}
-                                        />
-                                    </td>
-                                );
-                            })}
-                        </tr>
-                    ))}
+                                        if (isTextField && subIndex === 0) {
+                                            return (
+                                                <td
+                                                    key={`${hIndex}-${kIndex}`}
+                                                    rowSpan={numSubfilas}
+                                                    className="border px-2 py-1 text-center align-top"
+                                                >
+                                                    <input
+                                                        type="text"
+                                                        value={row[`${header.label}-${key}-0`] || ''}
+                                                        onChange={(e) =>
+                                                            updateCell(
+                                                                rowIndex,
+                                                                `${header.label}-${key}-0`,
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="w-full border-none outline-none"
+                                                    />
+                                                </td>
+                                            );
+                                        }
+
+                                        if (isTextField) return null;
+
+                                        return (
+                                            <td key={`${hIndex}-${kIndex}`} className="border px-2 py-1 text-center">
+                                                {isDateField || header.label === 'FIRMA' ? (
+                                                    <input
+                                                        type="text"
+                                                        value={row[fullKey] || ''}
+                                                        onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
+                                                        className="w-full border-none outline-none"
+                                                    />
+                                                ) : (
+                                                    <div className="flex justify-center gap-2">
+                                                        <label className="flex items-center text-sm">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={row[fullKey] === 'C'}
+                                                                onChange={() => toggleCheckbox(rowIndex, fullKey, 'C')}
+                                                            />
+                                                            <span className="ml-1">C</span>
+                                                        </label>
+                                                        <label className="flex items-center text-sm">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={row[fullKey] === 'NC'}
+                                                                onChange={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
+                                                            />
+                                                            <span className="ml-1">NC</span>
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        );
+                                    });
+                                })}
+                            </tr>
+                        ))
+                    )}
                 </tbody>
             </table>
-
-            <div className="mt-4">
-                <label className="block text-sm mb-1">Observaciones:</label>
-                <textarea
-                    className="w-full border text-sm p-2"
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
-                    rows={3}
-                />
-            </div>
-
             <button
-                onClick={handleGuardar}
-                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-                disabled={loading}
+                type="button"
+                onClick={addRow}
+                className="bg-green-500 text-white px-3 py-1 rounded text-sm cursor-pointer mt-4"
             >
-                {loading ? "Guardando..." : "Guardar formato"}
+                Añadir fila
             </button>
+
         </div>
     );
 }

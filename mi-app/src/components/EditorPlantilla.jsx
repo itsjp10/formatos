@@ -108,12 +108,11 @@ function EditorPlantilla({ onCrearPlantilla }) {
       return;
     }
 
-    const estructura = headers.map((h) => ({
-      label: h.label,
-      type: h.type,
-      subheaders: h.subheaders || [],
-      fixed: h.fixed || false,
-    }));
+    const estructura = {
+      headers: headers,
+      filas: rows,
+      numSubfilas: numSubfilas,
+    }
 
     const plantilla = {
       nombre: nombreFormato.trim(),
@@ -127,6 +126,9 @@ function EditorPlantilla({ onCrearPlantilla }) {
 
     console.log('Plantilla creada:', plantilla);
     alert("Plantilla creada (ver consola para estructura JSON)");
+    console.log('Rows: ', rows);
+    console.log('Headers: ', headers);
+
   };
 
   return (

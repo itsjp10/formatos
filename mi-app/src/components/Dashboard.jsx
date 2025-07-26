@@ -87,9 +87,20 @@ function Dashboard({ logout }) {
                 throw new Error('No se encontró la plantilla seleccionada');
             }
 
+            // Construye la estructura base del formato
+            const columnas = plantilla.estructura.headers
+            const filas = plantilla.estructura.filas
+            const numSubfilas = plantilla.estructura.numSubfilas || 3;
+
+            const estructuraCompleta = {
+                columnas,
+                filas,
+                numSubfilas,
+            };
+
             const nuevoFormato = {
                 tipo: plantilla.nombre,
-                data: JSON.stringify(plantilla.estructura),
+                data: JSON.stringify(estructuraCompleta),
                 name: plantilla.nombre,
                 usuarioId: usuario.userID,
             };
