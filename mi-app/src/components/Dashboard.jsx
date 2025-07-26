@@ -20,12 +20,6 @@ function Dashboard({ logout }) {
     // Tipos de formatos disponibles
     const [tiposFormatos, setTiposFormatos] = useState([])
 
-    const tipos_formatos = [
-        "Mampostería interna", "Mampostería fachada", "Durapanel-Zafarreo",
-        "Instalaciones hidro-san", "Plantilla", "Pañete", "Cielo raso",
-        "Estuco", "Pisos", "Enchapes"
-    ]
-
     useEffect(() => {
         const fetchFormatos = async () => {
             setError('')
@@ -234,6 +228,7 @@ function Dashboard({ logout }) {
                     <div className="p-4 text-black w-full max-w-5xl">
                         <h1 className="mb-4 text-2xl font-bold">Formato: {tipoFormato}</h1>
                         <Formato
+                            key={selectedIdFormato}
                             tipoFormato={tipoFormato}
                             contenidoFormato={formatoData}
                             onGuardar={handleGuardarFormato}
