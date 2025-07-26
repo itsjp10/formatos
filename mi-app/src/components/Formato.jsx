@@ -80,14 +80,14 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                         {headers.map((header, i) =>
                             header.subheaders?.length > 0
                                 ? header.subheaders.map((sub, j) => (
-                                      <th
-                                          key={`sub-${i}-${j}`}
-                                          colSpan={2}
-                                          className="border bg-gray-100 px-2 py-1 text-center"
-                                      >
-                                          {sub}
-                                      </th>
-                                  ))
+                                    <th
+                                        key={`sub-${i}-${j}`}
+                                        colSpan={2}
+                                        className="border bg-gray-100 px-2 py-1 text-center"
+                                    >
+                                        {sub}
+                                    </th>
+                                ))
                                 : null
                         )}
                     </tr>
@@ -95,13 +95,13 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                         {headers.map((header, i) =>
                             header.subheaders?.length > 0
                                 ? header.subheaders.flatMap((sub, j) => [
-                                      <th key={`c-${i}-${j}`} className="border text-center bg-gray-50">
-                                          C
-                                      </th>,
-                                      <th key={`nc-${i}-${j}`} className="border text-center bg-gray-50">
-                                          NC
-                                      </th>
-                                  ])
+                                    <th key={`c-${i}-${j}`} className="border text-center bg-gray-50">
+                                        C
+                                    </th>,
+                                    <th key={`nc-${i}-${j}`} className="border text-center bg-gray-300">
+                                        NC
+                                    </th>
+                                ])
                                 : null
                         )}
                     </tr>
@@ -160,25 +160,20 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                         return [
                                             <td
                                                 key={`c-${hIndex}-${kIndex}`}
-                                                className="border px-2 py-1 text-center bg-gray-100"
+                                                className="border px-2 py-1 text-center cursor-pointer w-7"
+                                                onClick={() => toggleCheckbox(rowIndex, fullKey, 'C')}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={row[fullKey] === 'C'}
-                                                    onChange={() => toggleCheckbox(rowIndex, fullKey, 'C')}
-                                                />
+                                                {row[fullKey] === 'C' ? '✔' : ''}
                                             </td>,
                                             <td
                                                 key={`nc-${hIndex}-${kIndex}`}
-                                                className="border px-2 py-1 text-center bg-gray-100"
+                                                className="border px-2 py-1 text-center cursor-pointer w-7 bg-gray-300"
+                                                onClick={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={row[fullKey] === 'NC'}
-                                                    onChange={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
-                                                />
+                                                {row[fullKey] === 'NC' ? '✘' : ''}
                                             </td>
                                         ];
+
                                     });
                                 })}
                             </tr>
