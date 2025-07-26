@@ -50,6 +50,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
             >
                 Guardar cambios
             </button>
+
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     <tr>
@@ -116,6 +117,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                     return keys.map((key, kIndex) => {
                                         const fullKey = `${header.label}-${key}-${subIndex}`;
 
+                                        // APTO y OBSERVACIONES: solo en subIndex === 0
                                         if (isSimpleField(header.label) && subIndex === 0) {
                                             return (
                                                 <td
@@ -123,8 +125,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                                     rowSpan={numSubfilas}
                                                     className="border px-2 py-1 text-center align-top"
                                                 >
-                                                    <input
-                                                        type="text"
+                                                    <textarea
                                                         value={row[`${header.label}-${key}-0`] || ''}
                                                         onChange={(e) =>
                                                             updateCell(
@@ -133,7 +134,8 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="w-full border-none outline-none"
+                                                        className="w-full h-full min-h-[60px] border-none outline-none resize-none"
+                                                        placeholder={`Escriba ${header.label.toLowerCase()}...`}
                                                     />
                                                 </td>
                                             );
@@ -157,6 +159,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                             );
                                         }
 
+                                        // C / NC checkboxes
                                         return [
                                             <td
                                                 key={`c-${hIndex}-${kIndex}`}
@@ -173,7 +176,6 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                                 {row[fullKey] === 'NC' ? '✘' : ''}
                                             </td>
                                         ];
-
                                     });
                                 })}
                             </tr>
@@ -181,6 +183,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                     )}
                 </tbody>
             </table>
+
             <button
                 type="button"
                 onClick={addRow}
