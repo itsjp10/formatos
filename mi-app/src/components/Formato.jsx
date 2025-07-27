@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import React from 'react';
 
 function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
     const [data, setData] = useState(contenidoFormato || {});
@@ -7,15 +8,15 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
     const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
 
     const handleGuardar = () => {
-        setData({ filas: rows, columnas: headers, numSubfilas: numSubfilas });
+        setData({ filas: rows, columnas: headers, numSubfilas });
         onGuardar(data);
     };
 
     const addRow = () => {
         const newRow = {};
         headers.forEach((header) => {
-            const keys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
-            keys.forEach((key) => {
+            const subkeys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
+            subkeys.forEach((key) => {
                 for (let i = 0; i < numSubfilas; i++) {
                     const fullKey = `${header.label}-${key}-${i}`;
                     newRow[fullKey] = '';
@@ -53,60 +54,92 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
 
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
+                    {/* Fila 1: labels principales */}
                     <tr>
-                        {headers.map((header, i) => {
-                            if (header.subheaders?.length > 0) {
+                        {contenidoFormato.columnas.map((col, colIndex) => {
+                            if (col.fixed) {
                                 return (
                                     <th
-                                        key={i}
-                                        colSpan={header.subheaders.length * 2}
-                                        className="border bg-gray-200 px-2 py-1 text-center"
+                                        key={colIndex}
+                                        rowSpan={3}
+                                        className="bg-gray-200 border px-2 py-1 text-center align-middle"
                                     >
-                                        {header.label}
+                                        {col.label}
+                                    </th>
+                                );
+                            } else if (col.subheaders && col.subheaders.length > 0) {
+                                return (
+                                    <th
+                                        key={colIndex}
+                                        colSpan={col.subheaders.length * 2}
+                                        className="bg-gray-200 border px-2 py-1 text-center"
+                                    >
+                                        {col.label}
+                                    </th>
+                                );
+                            } else {
+                                return (
+                                    <th
+                                        key={colIndex}
+                                        colSpan={2}
+                                        rowSpan={2}
+                                        className="bg-gray-200 border px-2 py-1 text-center align-middle"
+                                    >
+                                        {col.label}
                                     </th>
                                 );
                             }
-                            return (
-                                <th
-                                    key={i}
-                                    rowSpan={3}
-                                    className="border bg-gray-200 px-2 py-1 text-center"
-                                >
-                                    {header.label}
-                                </th>
-                            );
                         })}
                     </tr>
+
+                    {/* Fila 2: subheaders (solo si los hay) */}
                     <tr>
-                        {headers.map((header, i) =>
-                            header.subheaders?.length > 0
-                                ? header.subheaders.map((sub, j) => (
+                        {contenidoFormato.columnas.map((col, colIndex) => {
+                            if (col.fixed) return null;
+
+                            if (col.subheaders && col.subheaders.length > 0) {
+                                return col.subheaders.map((sub, subIndex) => (
                                     <th
-                                        key={`sub-${i}-${j}`}
+                                        key={`${colIndex}-${subIndex}`}
                                         colSpan={2}
-                                        className="border bg-gray-100 px-2 py-1 text-center"
+                                        className="bg-gray-200 border px-2 py-1 text-center"
                                     >
                                         {sub}
                                     </th>
-                                ))
-                                : null
-                        )}
+                                ));
+                            }
+
+                            return null;
+                        })}
                     </tr>
+
+                    {/* Fila 3: C / NC headers */}
                     <tr>
-                        {headers.map((header, i) =>
-                            header.subheaders?.length > 0
-                                ? header.subheaders.flatMap((sub, j) => [
-                                    <th key={`c-${i}-${j}`} className="border text-center bg-gray-50">
-                                        C
-                                    </th>,
-                                    <th key={`nc-${i}-${j}`} className="border text-center bg-gray-300">
-                                        NC
-                                    </th>
-                                ])
-                                : null
-                        )}
+                        {contenidoFormato.columnas.map((col, colIndex) => {
+                            if (col.fixed) return null;
+
+                            if (col.subheaders && col.subheaders.length > 0) {
+                                return col.subheaders.map((_, subIndex) => (
+                                    <React.Fragment key={`${colIndex}-nc-${subIndex}`}>
+                                        <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
+                                        <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
+                                    </React.Fragment>
+                                ));
+                            } else {
+                                // columna sin subheaders (no fija)
+                                return (
+                                    <React.Fragment key={`${colIndex}-nocols`}>
+                                        <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
+                                        <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
+                                    </React.Fragment>
+                                );
+                            }
+                        })}
                     </tr>
                 </thead>
+
+
+
                 <tbody>
                     {rows.map((row, rowIndex) =>
                         [...Array(numSubfilas)].map((_, subIndex) => (
@@ -117,7 +150,6 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                     return keys.map((key, kIndex) => {
                                         const fullKey = `${header.label}-${key}-${subIndex}`;
 
-                                        // APTO y OBSERVACIONES: solo en subIndex === 0
                                         if (isSimpleField(header.label) && subIndex === 0) {
                                             return (
                                                 <td
@@ -159,7 +191,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
                                             );
                                         }
 
-                                        // C / NC checkboxes
+                                        // Render C / NC cells
                                         return [
                                             <td
                                                 key={`c-${hIndex}-${kIndex}`}
