@@ -4,6 +4,7 @@ import Sidebar, { SidebarItem } from './Sidebar'
 import { Signature, Plus, LayoutTemplate } from "lucide-react"
 import Formato from './Formato'
 import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
+import FirmaUploader from './FirmaUploader';
 
 
 function Dashboard({ logout }) {
@@ -19,6 +20,11 @@ function Dashboard({ logout }) {
 
     // Tipos de formatos disponibles
     const [tiposFormatos, setTiposFormatos] = useState([])
+
+    const handleUpload = (url) => {
+        console.log('Firma subida con URL:', url);
+        // Aquí puedes hacer un POST a tu backend con la firma
+    };
 
     useEffect(() => {
         const fetchFormatos = async () => {
@@ -260,7 +266,7 @@ function Dashboard({ logout }) {
                 )}
                 {pantalla === "Mis firmas" && (
                     <div className='text-black'>
-                        <h1>This is screen to show all signatures</h1>
+                        <FirmaUploader onUpload={handleUpload} />
                     </div>
                 )}
             </div>
