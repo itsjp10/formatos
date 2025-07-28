@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 
-const SignaturePad = () => {
+const SignaturePad = ({ onUpload }) => {
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
   const [drawing, setDrawing] = useState(false);
@@ -8,6 +8,12 @@ const SignaturePad = () => {
   const [lastPoint, setLastPoint] = useState(null);
 
   const COLORS = ['#222', '#e74c3c', '#3498db', '#16a085'];
+
+  const saveFirma = () => {
+    const canvas = canvasRef.current;
+    const dataUrl = canvas.toDataURL('image/png');
+    onUpload(dataUrl); // Llama a la función enviada por props
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -111,6 +117,12 @@ const SignaturePad = () => {
           className="ml-4 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
         >
           Limpiar
+        </button>
+        <button
+          onClick={saveFirma}
+          className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+        >
+          Guardar firma
         </button>
       </div>
     </div>

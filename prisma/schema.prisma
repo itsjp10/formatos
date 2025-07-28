@@ -51,8 +51,8 @@ model Firma {
   usuarioId  String
   usuario    Usuario  @relation(fields: [usuarioId], references: [userID])
 
-  formatoId  String
-  formato    Formato  @relation(fields: [formatoId], references: [formatoID])
+  formatoId  String?
+  formato    Formato? @relation(fields: [formatoId], references: [formatoID])
 }
 
 model PlantillaFormato {

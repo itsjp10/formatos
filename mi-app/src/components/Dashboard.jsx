@@ -21,9 +21,51 @@ function Dashboard({ logout }) {
     // Tipos de formatos disponibles
     const [tiposFormatos, setTiposFormatos] = useState([])
 
-    const handleUpload = (url) => {
-        console.log('Firma subida con URL:', url);
-        // Aquí puedes hacer un POST a tu backend con la firma
+    const handleUpload = async (dataUrl) => {
+        try {
+            // Subir a Cloudinary
+            const formData = new FormData();
+            formData.append('file', dataUrl);
+            formData.append('upload_preset', 'firmas'); // ⚠️ Reemplaza esto con tu preset
+            const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/dttndicib/image/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const cloudData = await cloudRes.json();
+            const imageUrl = cloudData.secure_url;
+            console.log('Firma subida a Cloudinary:', imageUrl);
+
+            // Guardar en la base de datos
+            const firmaPayload = {
+                tipo: "residente",
+                imagenUrl: imageUrl,
+                usuarioId: usuario.userID,
+                formatoId: null,
+            };
+
+            const dbRes = await fetch('/api/firmas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(firmaPayload),
+            });
+
+            if (!dbRes.ok) {
+                let errorMsg = 'Error al guardar firma en la base de datos';
+                try {
+                    const data = await dbRes.json();
+                    errorMsg = data?.error || errorMsg;
+                } catch (err) {
+                    console.warn('Respuesta sin JSON en dbRes');
+                }
+                throw new Error(errorMsg);
+            }
+
+            alert('Firma guardada con éxito');
+        } catch (err) {
+            console.error(err);
+            alert('Error al subir la firma: ' + err.message);
+        }
     };
 
     useEffect(() => {

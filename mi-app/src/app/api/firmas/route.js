@@ -1,35 +1,34 @@
-// src/app/api/firmas/route.js
-import prisma from '@/lib/prisma'
+// app/api/firmas/route.js
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma'; // o '../../lib/prisma' si no usas alias
 
 export async function POST(req) {
-  const data = await req.json()
-  const { tipo, usuarioId, formatoId, imagenUrl } = data
-
   try {
-    const firma = await prisma.firma.create({
+    const body = await req.json();
+    const { tipo, imagenUrl, usuarioId, formatoId } = body;
+
+    if (!tipo || !imagenUrl || !usuarioId) {
+      return NextResponse.json(
+        { error: 'Faltan datos obligatorios' },
+        { status: 400 }
+      );
+    }
+
+    const nuevaFirma = await prisma.firma.create({
       data: {
         tipo,
-        usuario: { connect: { userID: usuarioId } },
-        formato: { connect: { formatoID: formatoId } },
         imagenUrl,
+        usuarioId,
+        formatoId: formatoId || null,
       },
-    })
+    });
 
-    return Response.json(firma)
-  } catch (err) {
-    return new Response(JSON.stringify({ error: 'Error al crear firma' }), {
-      status: 500,
-    })
-  }
-}
-
-export async function GET() {
-  try {
-    const firmas = await prisma.firma.findMany()
-    return Response.json(firmas)
-  } catch (err) {
-    return new Response(JSON.stringify({ error: 'Error al obtener firmas' }), {
-      status: 500,
-    })
+    return NextResponse.json(nuevaFirma);
+  } catch (error) {
+    console.error('❌ Error en POST /api/firmas:', error);
+    return NextResponse.json(
+      { error: 'Error al guardar firma' },
+      { status: 500 }
+    );
   }
 }
