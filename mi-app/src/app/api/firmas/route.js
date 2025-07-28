@@ -32,3 +32,34 @@ export async function POST(req) {
     );
   }
 }
+
+// GET: Obtener todas las firmas de un usuario
+export async function GET(req) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const usuarioId = searchParams.get('usuarioId');
+
+    if (!usuarioId) {
+      return NextResponse.json(
+        { error: 'Falta el parámetro usuarioId' },
+        { status: 400 }
+      );
+    }
+
+    const firmas = await prisma.firma.findMany({
+      where: {
+        usuario: {
+          userID: usuarioId
+        }
+      }
+    });
+
+    return NextResponse.json(firmas);
+  } catch (error) {
+    console.error('❌ Error en GET /api/firmas:', error);
+    return NextResponse.json(
+      { error: 'Error al obtener firmas' },
+      { status: 500 }
+    );
+  }
+}

@@ -17,6 +17,7 @@ function Dashboard({ logout }) {
     const [tipoFormato, setTipoFormato] = useState('')
     const [selectedIdFormato, setSelectedIdFormato] = useState(null)
     const [formatoData, setFormatoData] = useState(null)
+    const [firmas, setFirmas] = useState([]) 
 
     // Tipos de formatos disponibles
     const [tiposFormatos, setTiposFormatos] = useState([])
@@ -89,6 +90,29 @@ function Dashboard({ logout }) {
         }
 
         fetchFormatos()
+    }, [usuario])
+
+    useEffect(() => {
+        const fetchFirmas = async () => {
+            setError('')
+            if (!usuario) return
+            try {
+                const res = await fetch(`/api/firmas?usuarioId=${usuario.userID}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                if (!res.ok) {
+                    const { error } = await res.json()
+                    throw new Error(error || 'Error desconocido')
+                }
+                const signatures = await res.json()
+                setFirmas(signatures)
+            } catch (err) {
+                setError(err.message)
+            }
+        }
+
+        fetchFirmas()
     }, [usuario])
 
     useEffect(() => {
@@ -308,6 +332,9 @@ function Dashboard({ logout }) {
                 )}
                 {pantalla === "Mis firmas" && (
                     <div className='text-black'>
+                        {firmas.map((firma, index) => (
+                            <h1 key={firma.firmaID}>Firma #{index}</h1>
+                        ))}
                         <FirmaUploader onUpload={handleUpload} />
                     </div>
                 )}
