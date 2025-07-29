@@ -29,7 +29,9 @@ function Dashboard({ logout }) {
     const [tiposFormatos, setTiposFormatos] = useState([])
     const handleSelectFirma = (firma) => {
         setSelectedFirma(firma);
+        localStorage.setItem('selectedFirmaId', firma); // 👈 Guarda en localStorage
         console.log('Firma seleccionada:', firma);
+
     }
 
     const handleUpload = async (dataUrl) => {
@@ -147,6 +149,12 @@ function Dashboard({ logout }) {
     useEffect(() => {
         const storedUser = localStorage.getItem("user")
         if (storedUser) setUsuario(JSON.parse(storedUser))
+
+        const storedFirmaId = localStorage.getItem("selectedFirmaId");
+        if (storedFirmaId) {
+            setSelectedFirma(storedFirmaId);
+        }
+
         setLoading(false)
     }, [])
 

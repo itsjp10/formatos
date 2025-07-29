@@ -38,8 +38,8 @@ function Firma({ firma, onDelete, onSelect, selected }) {
 
     return (
         <div onClick={() => onSelect(firma.firmaID)} 
-        className={selected ? "relative flex items-center justify-between border-2 border-blue-500 rounded-2xl shadow-md p-4 mb-4 max-w-md bg-blue-50" 
-        : "relative flex items-center justify-between border border-gray-300 rounded-2xl shadow-sm p-4 mb-4 max-w-md bg-white hover:border-2 hover:border-blue-500 hover:border-dashed"}>
+        className={selected ? "relative flex items-center justify-between border-2 border-yellow-500 rounded-2xl shadow-md p-4 mb-4 max-w-md bg-yellow-50" 
+        : "relative flex items-center justify-between border border-gray-300 rounded-2xl shadow-sm p-4 mb-4 max-w-md bg-white hover:border-2 hover:border-blue-500 hover:border-dashed hover:cursor-pointer"}>
             <div className="flex items-center space-x-4">
                 <img
                     src={firma.imagenUrl}
