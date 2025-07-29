@@ -5,6 +5,8 @@ import { Signature, Plus, LayoutTemplate } from "lucide-react"
 import Formato from './Formato'
 import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
 import FirmaUploader from './FirmaUploader';
+import Firma from './Firma';
+
 
 
 function Dashboard({ logout }) {
@@ -17,7 +19,7 @@ function Dashboard({ logout }) {
     const [tipoFormato, setTipoFormato] = useState('')
     const [selectedIdFormato, setSelectedIdFormato] = useState(null)
     const [formatoData, setFormatoData] = useState(null)
-    const [firmas, setFirmas] = useState([]) 
+    const [firmas, setFirmas] = useState([])
 
     // Tipos de formatos disponibles
     const [tiposFormatos, setTiposFormatos] = useState([])
@@ -27,7 +29,7 @@ function Dashboard({ logout }) {
             // Subir a Cloudinary
             const formData = new FormData();
             formData.append('file', dataUrl);
-            formData.append('upload_preset', 'firmas'); // ⚠️ Reemplaza esto con tu preset
+            formData.append('upload_preset', 'firmas');
             const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/dttndicib/image/upload`, {
                 method: 'POST',
                 body: formData,
@@ -61,11 +63,30 @@ function Dashboard({ logout }) {
                 }
                 throw new Error(errorMsg);
             }
+            const nuevaFirma = await dbRes.json();
+            setFirmas(prev => [...prev, nuevaFirma]);
 
             alert('Firma guardada con éxito');
         } catch (err) {
             console.error(err);
             alert('Error al subir la firma: ' + err.message);
+        }
+    };
+
+    const handleEliminarFirma = async (firmaID) => {
+        try {
+            const res = await fetch(`/api/firmas/${firmaID}`, { method: 'DELETE' });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Error desconocido al eliminar la firma');
+            }
+
+            // Elimina la firma del estado local
+            setFirmas((prevFirmas) => prevFirmas.filter((firma) => firma.firmaID !== firmaID));
+        } catch (err) {
+            console.error('❌ Error al eliminar firma:', err);
+            alert('No se pudo eliminar la firma. Intenta nuevamente.');
         }
     };
 
@@ -332,8 +353,8 @@ function Dashboard({ logout }) {
                 )}
                 {pantalla === "Mis firmas" && (
                     <div className='text-black'>
-                        {firmas.map((firma, index) => (
-                            <h1 key={firma.firmaID}>Firma #{index}</h1>
+                        {firmas.map((firma) => (
+                            <Firma key={firma.firmaID} firma={firma} onDelete={handleEliminarFirma}></Firma>
                         ))}
                         <FirmaUploader onUpload={handleUpload} />
                     </div>
