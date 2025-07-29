@@ -352,13 +352,21 @@ function Dashboard({ logout }) {
                     }} />
                 )}
                 {pantalla === "Mis firmas" && (
-                    <div className='text-black'>
-                        {firmas.map((firma) => (
-                            <Firma key={firma.firmaID} firma={firma} onDelete={handleEliminarFirma}></Firma>
-                        ))}
+                    <div className="text-black max-w-3xl p-6">
+                        <h1 className="text-2xl font-bold mb-4">Mis firmas</h1>
+
+                        <div className="max-h-[340px] overflow-y-auto space-y-4 w-full">
+
+                            {firmas.map((firma) => (
+                                <Firma key={firma.firmaID} firma={firma} onDelete={handleEliminarFirma} />
+                            ))}
+                        </div>
+
+                        <h2 className="text-xl font-semibold mt-8 mb-2">Firmar</h2>
                         <FirmaUploader onUpload={handleUpload} />
                     </div>
                 )}
+
             </div>
         </div>
     )

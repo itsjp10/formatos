@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react'; // ✅ Importamos el ícono de caneca
 
 const SignaturePad = ({ onUpload }) => {
   const canvasRef = useRef(null);
@@ -12,7 +13,7 @@ const SignaturePad = ({ onUpload }) => {
   const saveFirma = () => {
     const canvas = canvasRef.current;
     const dataUrl = canvas.toDataURL('image/png');
-    onUpload(dataUrl); // Llama a la función enviada por props
+    onUpload(dataUrl);
   };
 
   useEffect(() => {
@@ -21,9 +22,9 @@ const SignaturePad = ({ onUpload }) => {
 
     const scale = window.devicePixelRatio || 1;
     canvas.width = 500 * scale;
-    canvas.height = 300 * scale;
+    canvas.height = 250 * scale; // ✅ Cambié de 300px a 250px
     canvas.style.width = '500px';
-    canvas.style.height = '300px';
+    canvas.style.height = '250px';
     ctx.scale(scale, scale);
 
     ctx.lineCap = 'round';
@@ -94,30 +95,37 @@ const SignaturePad = ({ onUpload }) => {
 
   return (
     <div className="p-4">
-      <canvas
-        ref={canvasRef}
-        onMouseDown={handlePointerDown}
-        onMouseMove={handlePointerMove}
-        onMouseUp={handlePointerUp}
-        onMouseLeave={handlePointerUp}
-        className="bg-gray-100 rounded border"
-      />
-      <div className="mt-2 flex items-center gap-4">
-        <span>Color:</span>
+      {/* ✅ Contenedor con posición relativa para ubicar la caneca */}
+      <div className="relative w-[500px] h-[250px]">
+        <canvas
+          ref={canvasRef}
+          onMouseDown={handlePointerDown}
+          onMouseMove={handlePointerMove}
+          onMouseUp={handlePointerUp}
+          onMouseLeave={handlePointerUp}
+          className="bg-gray-100 rounded border-2 border-blue-500 border-dashed"
+        />
+        {/* ✅ Botón caneca flotante arriba a la derecha */}
+        <button
+          onClick={clearCanvas}
+          className="absolute top-2 right-2 text-gray-600 hover:text-red-500"
+        >
+          <Trash2 size={20} />
+        </button>
+      </div>
+
+      <div className="mt-2 flex items-center gap-2">
+        <span className="text-sm">Color:</span>
         {COLORS.map((color) => (
           <button
             key={color}
-            className={`w-6 h-6 rounded-full border-2 ${currentColor === color ? 'border-black' : 'border-white'}`}
+            className={`w-4 h-4 rounded-full border-2 transition ${
+              currentColor === color ? 'border-black' : 'border-white'
+            }`}
             style={{ backgroundColor: color }}
             onClick={() => setCurrentColor(color)}
           />
         ))}
-        <button
-          onClick={clearCanvas}
-          className="ml-4 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
-        >
-          Limpiar
-        </button>
         <button
           onClick={saveFirma}
           className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
