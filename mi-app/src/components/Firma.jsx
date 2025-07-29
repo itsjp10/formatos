@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { Copy, Trash2, MoreHorizontal } from 'lucide-react';
 
-function Firma({ firma, onDelete }) {
+function Firma({ firma, onDelete, onSelect, selected }) {    
     const fechaFormateada = new Date(firma.createdAt).toLocaleDateString('es-CO', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
-    });
+    });    
 
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
@@ -37,7 +37,9 @@ function Firma({ firma, onDelete }) {
     };
 
     return (
-        <div className="relative flex items-center justify-between border border-gray-300 rounded-2xl shadow-sm p-4 mb-4 max-w-md bg-white">
+        <div onClick={() => onSelect(firma.firmaID)} 
+        className={selected ? "relative flex items-center justify-between border-2 border-blue-500 rounded-2xl shadow-md p-4 mb-4 max-w-md bg-blue-50" 
+        : "relative flex items-center justify-between border border-gray-300 rounded-2xl shadow-sm p-4 mb-4 max-w-md bg-white hover:border-2 hover:border-blue-500 hover:border-dashed"}>
             <div className="flex items-center space-x-4">
                 <img
                     src={firma.imagenUrl}

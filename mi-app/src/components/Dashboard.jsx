@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react'
 import Sidebar, { SidebarItem } from './Sidebar'
-import { Signature, Plus, LayoutTemplate } from "lucide-react"
+import { Signature, Plus, LayoutTemplate, Info } from "lucide-react"
 import Formato from './Formato'
 import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
 import FirmaUploader from './FirmaUploader';
@@ -20,9 +20,17 @@ function Dashboard({ logout }) {
     const [selectedIdFormato, setSelectedIdFormato] = useState(null)
     const [formatoData, setFormatoData] = useState(null)
     const [firmas, setFirmas] = useState([])
+    const [selectedFirma, setSelectedFirma] = useState(null)
+
+    // Firma seleccionada
+    const firmaSeleccionada = firmas.find((firma) => firma.firmaID === selectedFirma);
 
     // Tipos de formatos disponibles
     const [tiposFormatos, setTiposFormatos] = useState([])
+    const handleSelectFirma = (firma) => {
+        setSelectedFirma(firma);
+        console.log('Firma seleccionada:', firma);
+    }
 
     const handleUpload = async (dataUrl) => {
         try {
@@ -353,16 +361,41 @@ function Dashboard({ logout }) {
                 )}
                 {pantalla === "Mis firmas" && (
                     <div className="text-black max-w-3xl p-6">
-                        <h1 className="text-2xl font-bold mb-4">Mis firmas</h1>
+                        <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            Mis firmas
+                            <div className="relative group">
+                                <Info className="w-5 h-5 cursor-pointer text-gray-500" />
+                                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 hidden group-hover:block bg-white border border-gray-300 text-xs text-gray-800 p-2 rounded shadow-md z-10 w-48">
+                                    Selecciona una firma para usarla en los formatos.
+                                </div>
+                            </div>
+                        </h1>
 
                         <div className="max-h-[340px] overflow-y-auto space-y-4 w-full">
+                            {firmaSeleccionada && (
+                                <Firma
+                                    key={firmaSeleccionada.firmaID}
+                                    firma={firmaSeleccionada}
+                                    onDelete={handleEliminarFirma}
+                                    onSelect={handleSelectFirma}
+                                    selected={true}
+                                />
+                            )}
 
-                            {firmas.map((firma) => (
-                                <Firma key={firma.firmaID} firma={firma} onDelete={handleEliminarFirma} />
-                            ))}
+                            {firmas
+                                .filter((firma) => firma.firmaID !== selectedFirma)
+                                .map((firma) => (
+                                    <Firma
+                                        key={firma.firmaID}
+                                        firma={firma}
+                                        onDelete={handleEliminarFirma}
+                                        onSelect={handleSelectFirma}
+                                        selected={false}
+                                    />
+                                ))}
                         </div>
 
-                        <h2 className="text-xl font-semibold mt-8 mb-2">Firmar</h2>
+                        <h2 className="text-xl font-bold mt-8 mb-2">Firmar</h2>
                         <FirmaUploader onUpload={handleUpload} />
                     </div>
                 )}
