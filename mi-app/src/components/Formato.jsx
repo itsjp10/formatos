@@ -1,16 +1,23 @@
 import { useState } from 'react';
 import React from 'react';
+import { Signature, Trash2 } from "lucide-react"
+import { set } from 'date-fns';
 
-function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
+
+function Formato({ contenidoFormato, onGuardar, rol, firma }) {
     const [data, setData] = useState(contenidoFormato || {});
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
     const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
+    const [firmas, setFirmas] = useState(contenidoFormato.firmas || '');
+    const [isFirmado, setIsFirmado] = useState(firmas.firmaRes || firmas.firmaContra || firmas.firmaSup ? true : false);
 
     const handleGuardar = () => {
-        setData({ filas: rows, columnas: headers, numSubfilas });
-        onGuardar(data);
+        const nuevoData = { filas: rows, columnas: headers, numSubfilas, firmas };
+        setData(nuevoData);
+        onGuardar(nuevoData);
     };
+
 
     const addRow = () => {
         const newRow = {};
@@ -223,6 +230,220 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, loading }) {
             >
                 Añadir fila
             </button>
+
+            <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
+                {/* CONTRATISTA */}
+
+                <div className="flex flex-col items-center w-1/3">
+                    <div className="h-20 mb-2 flex items-center justify-center">
+                        {rol == "contratista" && (
+                            <div>
+                                {isFirmado ? (
+                                    <img
+                                        src={firmas.firmaContra}
+                                        alt={`Firma ${firma.firmaID}`}
+                                        className="h-full object-contain"
+                                    />
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
+                                        onClick={() => {
+                                            setIsFirmado(true);
+                                            const nuevasFirmas = {
+                                                ...firmas,
+                                                firmaContra: firma.imagenUrl,
+                                            };
+                                            setFirmas(nuevasFirmas);
+
+                                            const nuevoData = {
+                                                filas: rows,
+                                                columnas: headers,
+                                                numSubfilas,
+                                                firmas: nuevasFirmas,
+                                            };
+                                            setData(nuevoData);
+                                            onGuardar(nuevoData); 
+                                        }}
+
+                                    >
+                                        <Signature className="w-4 h-4" />
+                                        Firmar
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+                    <div className="w-48 border-t-2 border-black mb-1"></div>
+                    <span className="text-sm font-semibold text-center">CONTRATISTA</span>
+                    {(isFirmado && rol == "contratista") && (
+                        <button
+                            onClick={() => {
+                                setIsFirmado(false);
+                                const nuevasFirmas = {
+                                    ...firmas,
+                                    firmaContra: "",
+                                };
+                                setFirmas(nuevasFirmas);
+
+                                const nuevoData = { //Esto se hace para que el formato se actualice sin depender de SetData
+                                    filas: rows,
+                                    columnas: headers,
+                                    numSubfilas,
+                                    firmas: nuevasFirmas, 
+                                };
+                                setData(nuevoData);
+                                onGuardar(nuevoData); 
+                            }}
+                            className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
+                        >
+                            <Trash2 className="w-5 h-5 text-gray-700" />
+                        </button>
+                    )}
+                </div>
+
+                {/* RESIDENTE DE TORRE */}
+                <div className="flex flex-col items-center w-1/3">
+                    <div className="h-20 mb-2 flex items-center justify-center">
+                        {rol == "residente" && (
+                            <div>
+                                {isFirmado ? (
+                                    <img
+                                        src={firmas.firmaRes}
+                                        alt={`Firma ${firma.firmaID}`}
+                                        className="h-full object-contain"
+                                    />
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
+                                        onClick={() => {
+                                            setIsFirmado(true);
+                                            const nuevasFirmas = {
+                                                ...firmas,
+                                                firmaRes: firma.imagenUrl,
+                                            };
+                                            setFirmas(nuevasFirmas);
+
+                                            const nuevoData = {
+                                                filas: rows,
+                                                columnas: headers,
+                                                numSubfilas,
+                                                firmas: nuevasFirmas,
+                                            };
+                                            setData(nuevoData);
+                                            onGuardar(nuevoData); 
+                                        }}
+
+                                    >
+                                        <Signature className="w-4 h-4" />
+                                        Firmar
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+                    <div className="w-48 border-t-2 border-black mb-1"></div>
+                    <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
+                    {(isFirmado && rol == "residente") && (
+                        <button
+                            onClick={() => {
+                                setIsFirmado(false);
+                                const nuevasFirmas = {
+                                    ...firmas,
+                                    firmaRes: "",
+                                };
+                                setFirmas(nuevasFirmas);
+
+                                const nuevoData = { //Esto se hace para que el formato se actualice sin depender de SetData
+                                    filas: rows,
+                                    columnas: headers,
+                                    numSubfilas,
+                                    firmas: nuevasFirmas, 
+                                };
+                                setData(nuevoData);
+                                onGuardar(nuevoData); 
+                            }}
+                            className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
+                        >
+                            <Trash2 className="w-5 h-5 text-gray-700" />
+                        </button>
+                    )}
+                </div>
+
+                {/* SUPERVISIÓN TÉCNICA */}
+                <div className="flex flex-col items-center w-1/3">
+                    <div className="h-20 mb-2 flex items-center justify-center">
+                        {rol == "supervisor" && (
+                            <div>
+                                {isFirmado ? (
+                                    <img
+                                        src={firmas.firmaSup}
+                                        alt={`Firma ${firma.firmaID}`}
+                                        className="h-full object-contain"
+                                    />
+                                ) : (
+                                    <button
+                                        type="button"
+                                        className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
+                                        onClick={() => {
+                                            setIsFirmado(true);
+                                            const nuevasFirmas = {
+                                                ...firmas,
+                                                firmaSup: firma.imagenUrl,
+                                            };
+                                            setFirmas(nuevasFirmas);
+
+                                            const nuevoData = {
+                                                filas: rows,
+                                                columnas: headers,
+                                                numSubfilas,
+                                                firmas: nuevasFirmas,
+                                            };
+                                            setData(nuevoData);
+                                            onGuardar(nuevoData); 
+                                        }}
+
+                                    >
+                                        <Signature className="w-4 h-4" />
+                                        Firmar
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+                    <div className="w-48 border-t-2 border-black mb-1"></div>
+                    <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
+                    {(isFirmado && rol == "supervisor") && (
+                        <button
+                            onClick={() => {
+                                setIsFirmado(false);
+                                const nuevasFirmas = {
+                                    ...firmas,
+                                    firmaSup: "",
+                                };
+                                setFirmas(nuevasFirmas);
+
+                                const nuevoData = { //Esto se hace para que el formato se actualice sin depender de SetData
+                                    filas: rows,
+                                    columnas: headers,
+                                    numSubfilas,
+                                    firmas: nuevasFirmas, 
+                                };
+                                setData(nuevoData);
+                                onGuardar(nuevoData); 
+                            }}
+                            className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
+                        >
+                            <Trash2 className="w-5 h-5 text-gray-700" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
         </div>
     );
 }

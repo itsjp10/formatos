@@ -22,9 +22,9 @@ const SignaturePad = ({ onUpload }) => {
 
     const scale = window.devicePixelRatio || 1;
     canvas.width = 500 * scale;
-    canvas.height = 250 * scale; // ✅ Cambié de 300px a 250px
+    canvas.height = 150 * scale; // ✅ Altura interna reducida
     canvas.style.width = '500px';
-    canvas.style.height = '250px';
+    canvas.style.height = '150px'; // ✅ Altura visual reducida
     ctx.scale(scale, scale);
 
     ctx.lineCap = 'round';
@@ -95,8 +95,8 @@ const SignaturePad = ({ onUpload }) => {
 
   return (
     <div className="p-4">
-      {/* ✅ Contenedor con posición relativa para ubicar la caneca */}
-      <div className="relative w-[500px] h-[250px]">
+      {/* ✅ Contenedor con nueva altura */}
+      <div className="relative w-[500px] h-[150px]">
         <canvas
           ref={canvasRef}
           onMouseDown={handlePointerDown}
@@ -105,7 +105,7 @@ const SignaturePad = ({ onUpload }) => {
           onMouseLeave={handlePointerUp}
           className="bg-gray-100 rounded border-2 border-blue-500 border-dashed"
         />
-        {/* ✅ Botón caneca flotante arriba a la derecha */}
+        {/* ✅ Botón caneca flotante */}
         <button
           onClick={clearCanvas}
           className="absolute top-2 right-2 text-gray-600 hover:text-red-500"

@@ -43,7 +43,7 @@ function Firma({ firma, onDelete, onSelect, selected }) {
             <div className="flex items-center space-x-4">
                 <img
                     src={firma.imagenUrl}
-                    alt={`Firma ${firma.id}`}
+                    alt={`Firma ${firma.firmaID}`}
                     className="w-16 h-16 object-contain rounded-md border"
                 />
                 <div>
