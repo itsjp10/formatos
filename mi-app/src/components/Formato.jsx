@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import React from 'react';
-import { Signature, Trash2 } from "lucide-react"
+import { Signature, Trash2, Plus } from "lucide-react"
 import { set } from 'date-fns';
 
 
@@ -29,6 +29,20 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
 
         const nuevoData = {
             filas: nuevasFilas,
+            columnas: headers,
+            numSubfilas,
+            firmas: firmas,
+        };
+        setData(nuevoData);
+        onGuardar(nuevoData);
+    };
+
+    const deleteRow = (index) => {
+        const updatedRows = rows.filter((_, i) => i !== index);
+        setRows(updatedRows);
+
+        const nuevoData = {
+            filas: updatedRows,
             columnas: headers,
             numSubfilas,
             firmas: firmas,
@@ -74,7 +88,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
     const isSignatureField = (label) => label === 'FIRMA';
 
     return (
-        <div className="overflow-auto">            
+        <div className="overflow-auto">
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     {/* Fila 1: labels principales */}
@@ -165,86 +179,103 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
 
                 <tbody>
                     {rows.map((row, rowIndex) =>
-                        [...Array(numSubfilas)].map((_, subIndex) => (
-                            <tr key={`${rowIndex}-${subIndex}`}>
-                                {headers.map((header, hIndex) => {
-                                    const keys = header.subheaders?.length ? header.subheaders : [header.label];
+                        [...Array(numSubfilas)].map((_, subIndex) => {
+                            return (
+                                <tr key={`${rowIndex}-${subIndex}`}>
+                                    {headers.map((header, hIndex) => {
+                                        const keys = header.subheaders?.length ? header.subheaders : [header.label];
 
-                                    return keys.map((key, kIndex) => {
-                                        const fullKey = `${header.label}-${key}-${subIndex}`;
+                                        return keys.map((key, kIndex) => {
+                                            const fullKey = `${header.label}-${key}-${subIndex}`;
 
-                                        if (isSimpleField(header.label) && subIndex === 0) {
-                                            return (
+                                            if (isSimpleField(header.label) && subIndex === 0) {
+                                                return (
+                                                    <td
+                                                        key={`${hIndex}-${kIndex}`}
+                                                        rowSpan={numSubfilas}
+                                                        className="border px-2 py-1 text-center align-top relative"
+                                                    >
+                                                        <textarea
+                                                            value={row[`${header.label}-${key}-0`] || ''}
+                                                            onChange={(e) =>
+                                                                updateCell(rowIndex, `${header.label}-${key}-0`, e.target.value)
+                                                            }
+                                                            className="w-full h-full min-h-[60px] border-none outline-none resize-none"
+                                                            placeholder={`Escriba ${header.label.toLowerCase()}...`}
+                                                        />
+                                                    </td>
+                                                );
+                                            }
+
+                                            if (isSimpleField(header.label)) return null;
+
+                                            if (isDateField(header.label) || isSignatureField(header.label)) {
+                                                return (
+                                                    <td
+                                                        key={`${hIndex}-${kIndex}`}
+                                                        className="border px-2 py-1 text-center"
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            value={row[fullKey] || ''}
+                                                            onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
+                                                            className="w-full border-none outline-none"
+                                                        />
+                                                    </td>
+                                                );
+                                            }
+
+                                            return [
                                                 <td
-                                                    key={`${hIndex}-${kIndex}`}
-                                                    rowSpan={numSubfilas}
-                                                    className="border px-2 py-1 text-center align-top"
+                                                    key={`c-${hIndex}-${kIndex}`}
+                                                    className="border px-2 py-1 text-center cursor-pointer w-7"
+                                                    onClick={() => toggleCheckbox(rowIndex, fullKey, 'C')}
                                                 >
-                                                    <textarea
-                                                        value={row[`${header.label}-${key}-0`] || ''}
-                                                        onChange={(e) =>
-                                                            updateCell(
-                                                                rowIndex,
-                                                                `${header.label}-${key}-0`,
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="w-full h-full min-h-[60px] border-none outline-none resize-none"
-                                                        placeholder={`Escriba ${header.label.toLowerCase()}...`}
-                                                    />
-                                                </td>
-                                            );
-                                        }
-
-                                        if (isSimpleField(header.label)) return null;
-
-                                        if (isDateField(header.label) || isSignatureField(header.label)) {
-                                            return (
+                                                    {row[fullKey] === 'C' ? '✔' : ''}
+                                                </td>,
                                                 <td
-                                                    key={`${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center"
+                                                    key={`nc-${hIndex}-${kIndex}`}
+                                                    className="border px-2 py-1 text-center cursor-pointer w-7 bg-gray-300"
+                                                    onClick={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
                                                 >
-                                                    <input
-                                                        type="text"
-                                                        value={row[fullKey] || ''}
-                                                        onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
-                                                        className="w-full border-none outline-none"
-                                                    />
+                                                    {row[fullKey] === 'NC' ? '✘' : ''}
                                                 </td>
-                                            );
-                                        }
+                                            ];
+                                        });
+                                    })}
 
-                                        // Render C / NC cells
-                                        return [
-                                            <td
-                                                key={`c-${hIndex}-${kIndex}`}
-                                                className="border px-2 py-1 text-center cursor-pointer w-7"
-                                                onClick={() => toggleCheckbox(rowIndex, fullKey, 'C')}
+                                    {/* Botón eliminar fila solo en la primera subfila */}
+                                    {subIndex === 0 && (
+                                        <td
+                                            rowSpan={numSubfilas}
+                                            className="px-1 py-1 text-center align-middle"
+                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteRow(rowIndex)}
+                                                className="ml-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-1 shadow-sm transition-colors"
+                                                title="Eliminar fila"
                                             >
-                                                {row[fullKey] === 'C' ? '✔' : ''}
-                                            </td>,
-                                            <td
-                                                key={`nc-${hIndex}-${kIndex}`}
-                                                className="border px-2 py-1 text-center cursor-pointer w-7 bg-gray-300"
-                                                onClick={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
-                                            >
-                                                {row[fullKey] === 'NC' ? '✘' : ''}
-                                            </td>
-                                        ];
-                                    });
-                                })}
-                            </tr>
-                        ))
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    )}
+                                </tr>
+                            );
+                        })
                     )}
                 </tbody>
-            </table>
 
+
+            </table>
+            {/* Botón anclado abajo a la izquierda */}
             <button
                 type="button"
                 onClick={addRow}
-                className="bg-green-500 text-white px-3 py-1 rounded text-sm cursor-pointer mt-4"
+                className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-1 shadow-sm transition-colors"
+                title="Insertar fila debajo"
             >
-                Añadir fila
+                <Plus className="w-4 h-4" />
             </button>
 
             <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
