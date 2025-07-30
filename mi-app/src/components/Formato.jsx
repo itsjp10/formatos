@@ -12,13 +12,6 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
     const [firmas, setFirmas] = useState(contenidoFormato.firmas || '');
     const [isFirmado, setIsFirmado] = useState(firmas.firmaRes || firmas.firmaContra || firmas.firmaSup ? true : false);
 
-    const handleGuardar = () => {
-        const nuevoData = { filas: rows, columnas: headers, numSubfilas, firmas };
-        setData(nuevoData);
-        onGuardar(nuevoData);
-    };
-
-
     const addRow = () => {
         const newRow = {};
         headers.forEach((header) => {
@@ -30,35 +23,58 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                 }
             });
         });
-        setRows([...rows, newRow]);
+        const nuevasFilas = [...rows, newRow]; // usamos este nuevasFilas porque React no actualiza el estado inmediatamente
+
+        setRows(nuevasFilas);
+
+        const nuevoData = {
+            filas: nuevasFilas,
+            columnas: headers,
+            numSubfilas,
+            firmas: firmas,
+        };
+        setData(nuevoData);
+        onGuardar(nuevoData);
     };
 
     const updateCell = (rowIndex, key, value) => {
         const updated = [...rows];
         updated[rowIndex][key] = value;
         setRows(updated);
+
+        const nuevoData = {
+            filas: updated,
+            columnas: headers,
+            numSubfilas,
+            firmas: firmas,
+        };
+        setData(nuevoData);
+        onGuardar(nuevoData);
     };
+
 
     const toggleCheckbox = (rowIndex, key, value) => {
         const updated = [...rows];
         updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
         setRows(updated);
+
+        const nuevoData = {
+            filas: updated,
+            columnas: headers,
+            numSubfilas,
+            firmas: firmas,
+        };
+        setData(nuevoData);
+        onGuardar(nuevoData);
     };
+
 
     const isSimpleField = (label) => ['APTO', 'OBSERVACIONES'].includes(label);
     const isDateField = (label) => label === 'FECHA';
     const isSignatureField = (label) => label === 'FIRMA';
 
     return (
-        <div className="overflow-auto">
-            <button
-                type="button"
-                className="bg-green-500 text-white px-3 py-1 rounded text-sm cursor-pointer mb-4"
-                onClick={handleGuardar}
-            >
-                Guardar cambios
-            </button>
-
+        <div className="overflow-auto">            
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     {/* Fila 1: labels principales */}
@@ -263,7 +279,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                                                 firmas: nuevasFirmas,
                                             };
                                             setData(nuevoData);
-                                            onGuardar(nuevoData); 
+                                            onGuardar(nuevoData);
                                         }}
 
                                     >
@@ -291,10 +307,10 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                                     filas: rows,
                                     columnas: headers,
                                     numSubfilas,
-                                    firmas: nuevasFirmas, 
+                                    firmas: nuevasFirmas,
                                 };
                                 setData(nuevoData);
-                                onGuardar(nuevoData); 
+                                onGuardar(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
@@ -333,7 +349,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                                                 firmas: nuevasFirmas,
                                             };
                                             setData(nuevoData);
-                                            onGuardar(nuevoData); 
+                                            onGuardar(nuevoData);
                                         }}
 
                                     >
@@ -361,10 +377,10 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                                     filas: rows,
                                     columnas: headers,
                                     numSubfilas,
-                                    firmas: nuevasFirmas, 
+                                    firmas: nuevasFirmas,
                                 };
                                 setData(nuevoData);
-                                onGuardar(nuevoData); 
+                                onGuardar(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
@@ -403,7 +419,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                                                 firmas: nuevasFirmas,
                                             };
                                             setData(nuevoData);
-                                            onGuardar(nuevoData); 
+                                            onGuardar(nuevoData);
                                         }}
 
                                     >
@@ -431,10 +447,10 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
                                     filas: rows,
                                     columnas: headers,
                                     numSubfilas,
-                                    firmas: nuevasFirmas, 
+                                    firmas: nuevasFirmas,
                                 };
                                 setData(nuevoData);
-                                onGuardar(nuevoData); 
+                                onGuardar(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
