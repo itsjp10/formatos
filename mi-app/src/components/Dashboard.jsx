@@ -193,7 +193,8 @@ function Dashboard({ logout }) {
             // Construye la estructura base del formato
             const columnas = plantilla.estructura.headers
             const filas = plantilla.estructura.filas
-            const numSubfilas = plantilla.estructura.numSubfilas || 3;            
+            const numSubfilas = plantilla.estructura.numSubfilas || 3; 
+            const titulos = plantilla.estructura.titulos || '';           
 
 
             const estructuraCompleta = {
@@ -204,7 +205,8 @@ function Dashboard({ logout }) {
                     firmaContra: "",
                     firmaRes: "",
                     firmaSup: ""
-                }
+                },
+                titulos
             };
 
             const nuevoFormato = {
@@ -341,13 +343,13 @@ function Dashboard({ logout }) {
                 )}
                 {pantalla === "Formato" && (
                     <div className="p-4 text-black w-full max-w-5xl">
-                        <h1 className="mb-4 text-2xl font-bold">Formato: {tipoFormato}</h1>
                         <Formato
                             key={selectedIdFormato}                            
                             contenidoFormato={formatoData}
                             onGuardar={handleGuardarFormato}
                             rol={usuario.role}
-                            firma={firmaSeleccionada}                            
+                            firma={firmaSeleccionada}     
+                            tipoFormato={tipoFormato}                       
                             
                         />
                         {error && <div className="mt-2 text-red-500">{error}</div>}

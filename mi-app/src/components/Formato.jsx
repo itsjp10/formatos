@@ -2,15 +2,17 @@ import { useState } from 'react';
 import React from 'react';
 import { Signature, Trash2, Plus } from "lucide-react"
 import { set } from 'date-fns';
+import EncabezadoFormato from './EncabezadoFormato';
 
 
-function Formato({ contenidoFormato, onGuardar, rol, firma }) {
+function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
     const [data, setData] = useState(contenidoFormato || {});
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
     const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
     const [firmas, setFirmas] = useState(contenidoFormato.firmas || '');
     const [isFirmado, setIsFirmado] = useState(firmas.firmaRes || firmas.firmaContra || firmas.firmaSup ? true : false);
+    const [titulos, setTitulos] = useState(contenidoFormato.titulos || '')
 
     const addRow = () => {
         const newRow = {};
@@ -31,6 +33,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
             filas: nuevasFilas,
             columnas: headers,
             numSubfilas,
+            titulos: titulos,
             firmas: firmas,
         };
         setData(nuevoData);
@@ -45,6 +48,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
             filas: updatedRows,
             columnas: headers,
             numSubfilas,
+            titulos: titulos,
             firmas: firmas,
         };
         setData(nuevoData);
@@ -60,6 +64,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
             filas: updated,
             columnas: headers,
             numSubfilas,
+            titulos: titulos,
             firmas: firmas,
         };
         setData(nuevoData);
@@ -76,6 +81,7 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
             filas: updated,
             columnas: headers,
             numSubfilas,
+            titulos: titulos,
             firmas: firmas,
         };
         setData(nuevoData);
@@ -88,7 +94,25 @@ function Formato({ contenidoFormato, onGuardar, rol, firma }) {
     const isSignatureField = (label) => label === 'FIRMA';
 
     return (
-        <div className="overflow-auto">
+        <div className="w-full overflow-x-auto">
+            {/* Encabezado del formato */}
+            <EncabezadoFormato
+                contenidoFormato={contenidoFormato}
+                tipoFormato={tipoFormato}
+                hayFilas={rows.length > 0}
+                onTitulosChange={(titulosActualizados) => {
+                    const nuevoData = {
+                        filas: rows,
+                        columnas: headers,
+                        numSubfilas,
+                        titulos: titulosActualizados,
+                        firmas: firmas,
+                    };
+                    setTitulos(titulosActualizados);
+                    setData(nuevoData);
+                    onGuardar(nuevoData);
+                }}
+            />
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     {/* Fila 1: labels principales */}

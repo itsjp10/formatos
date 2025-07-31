@@ -16,6 +16,18 @@ function EditorPlantilla({ onCrearPlantilla }) {
 
   const [nombreFormato, setNombreFormato] = useState('');
   const [descripcionFormato, setDescripcionFormato] = useState('');
+  const [titulos, setTitulos] = useState({
+    cod: '',
+    aprobo: '',
+    fechaEmision: '',
+    obra: '',
+    fecha: '',
+    elaboradoPor: '',
+    torre: '',
+    contratista: '',
+    residenteObra: '',
+  });
+
 
   const addColumn = () => {
     if (!newColumnLabel.trim()) return;
@@ -103,8 +115,9 @@ function EditorPlantilla({ onCrearPlantilla }) {
   };
 
   const crearPlantilla = () => {
-    if (!nombreFormato.trim()) {
-      alert("Debes ingresar un nombre para la plantilla.");
+
+    if (!nombreFormato.trim() || !titulos.cod.trim() || !titulos.aprobo.trim() || !titulos.fechaEmision.trim()) {
+      alert("Debes completar los campos obligatorios: Nombre del formato, Código, Aprobó y Fecha de emisión.");
       return;
     }
 
@@ -112,6 +125,7 @@ function EditorPlantilla({ onCrearPlantilla }) {
       headers: headers,
       filas: rows,
       numSubfilas: numSubfilas,
+      titulos: titulos,
     }
 
     const plantilla = {
@@ -133,6 +147,96 @@ function EditorPlantilla({ onCrearPlantilla }) {
 
   return (
     <div className="p-4 space-y-4 text-black">
+
+      {/*SE MUESTRAN LOS TITULOS*/}
+      <div className="grid grid-cols-3 gap-4 text-sm">
+        <div>
+          <label className="block font-medium">Código *</label>
+          <input
+            type="text"
+            value={titulos.cod}
+            onChange={(e) => setTitulos({ ...titulos, cod: e.target.value })}
+            className="border p-1 w-full"
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Aprobó *</label>
+          <input
+            type="text"
+            value={titulos.aprobo}
+            onChange={(e) => setTitulos({ ...titulos, aprobo: e.target.value })}
+            className="border p-1 w-full"
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Fecha de emisión *</label>
+          <input
+            type="date"
+            value={titulos.fechaEmision}
+            onChange={(e) => setTitulos({ ...titulos, fechaEmision: e.target.value })}
+            className="border p-1 w-full"
+            required
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Obra</label>
+          <input
+            type="text"
+            value={titulos.obra}
+            onChange={(e) => setTitulos({ ...titulos, obra: e.target.value })}
+            className="border p-1 w-full"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Fecha</label>
+          <input
+            type="date"
+            value={titulos.fecha}
+            onChange={(e) => setTitulos({ ...titulos, fecha: e.target.value })}
+            className="border p-1 w-full"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Elaborado por</label>
+          <input
+            type="text"
+            value={titulos.elaboradoPor}
+            onChange={(e) => setTitulos({ ...titulos, elaboradoPor: e.target.value })}
+            className="border p-1 w-full"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Torre</label>
+          <input
+            type="text"
+            value={titulos.torre}
+            onChange={(e) => setTitulos({ ...titulos, torre: e.target.value })}
+            className="border p-1 w-full"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Contratista</label>
+          <input
+            type="text"
+            value={titulos.contratista}
+            onChange={(e) => setTitulos({ ...titulos, contratista: e.target.value })}
+            className="border p-1 w-full"
+          />
+        </div>
+        <div>
+          <label className="block font-medium">Residente de obra</label>
+          <input
+            type="text"
+            value={titulos.residenteObra}
+            onChange={(e) => setTitulos({ ...titulos, residenteObra: e.target.value })}
+            className="border p-1 w-full"
+          />
+        </div>
+      </div>
+
+
       <div className="flex gap-4">
         <input
           type="text"
@@ -236,13 +340,13 @@ function EditorPlantilla({ onCrearPlantilla }) {
               {headers.map((header) =>
                 header.subheaders?.length > 0
                   ? header.subheaders.map((sub, i) => (
-                      <th
-                        key={i}
-                        className="border bg-gray-100 px-2 py-1 text-center"
-                      >
-                        {sub}
-                      </th>
-                    ))
+                    <th
+                      key={i}
+                      className="border bg-gray-100 px-2 py-1 text-center"
+                    >
+                      {sub}
+                    </th>
+                  ))
                   : null
               )}
             </tr>
