@@ -1,7 +1,7 @@
 import prisma from '@/lib/prisma'
 
-export async function PUT(req, context) {
-  const { id } = await context.params
+export async function PUT(req, { params }) {
+  const { id } = params
   const body = await req.json()
   const { data, name } = body
 
@@ -24,5 +24,24 @@ export async function PUT(req, context) {
   } catch (err) {
     console.error('Error al actualizar formato:', err)
     return new Response(JSON.stringify({ error: 'Error al actualizar formato' }), { status: 500 })
+  }
+}
+
+export async function DELETE(req, { params }) {
+  const { id } = params;
+
+  if (!id) {
+    return new Response(JSON.stringify({ error: 'Falta el ID del formato a eliminar' }), { status: 400 })
+  }
+
+  try {
+    await prisma.formato.delete({ 
+      where: { formatoID: id },
+    })
+
+    return new Response(JSON.stringify({ success: true }), { status: 200 })
+  } catch (err) {
+    console.error('Error al eliminar formato:', err)
+    return new Response(JSON.stringify({ error: 'Error al eliminar formato' }), { status: 500 })
   }
 }

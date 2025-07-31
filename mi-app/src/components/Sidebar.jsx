@@ -173,15 +173,16 @@ export function SidebarItem({ icon, text, active, alert, tipo, onClick, formatoI
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowMenu(false);
-                  // Esperamos a que el menú se cierre para activar la edición
-                  setTimeout(() => setIsEditing(true), 0);
+                  setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent('solicitar-eliminacion-formato', { detail: formatoID }));
+                  }, 0);
                 }}
-
                 className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
               >
                 <Trash size={16} />
                 Eliminar
               </button>
+
             </div>
           )}
         </div>

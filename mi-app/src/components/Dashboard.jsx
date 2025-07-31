@@ -6,6 +6,7 @@ import Formato from './Formato'
 import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
 import FirmaUploader from './FirmaUploader';
 import Firma from './Firma';
+import ConfirmDialog from './ConfirmDialog';
 
 
 
@@ -33,6 +34,32 @@ function Dashboard({ logout }) {
         console.log('Firma seleccionada:', firma);
 
     }
+
+    // Manejo de confirmación de eliminación
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [formatoToDelete, setFormatoToDelete] = useState(null);
+
+    const handleDeleteFormato = async () => {
+        if (!formatoToDelete) return;
+        try {
+            const res = await fetch(`/api/formatos/${formatoToDelete}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const { error } = await res.json();
+                throw new Error(error || 'Error al eliminar formato');
+            }
+
+            // Actualizar lista de formatos local
+            setFormatos(prev => prev.filter(f => f.formatoID !== formatoToDelete));
+            if (selectedIdFormato === formatoToDelete) {
+                setSelectedIdFormato(null);
+                setPantalla('');
+            }
+            setFormatoToDelete(null);
+            setShowConfirmDelete(false);
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
 
     const handleUpload = async (dataUrl) => {
         try {
@@ -179,6 +206,15 @@ function Dashboard({ logout }) {
         fetchTipoFormatos()
     }, [usuario])
 
+    useEffect(() => {
+        const handleConfirmEvent = (e) => {
+            setFormatoToDelete(e.detail);
+            setShowConfirmDelete(true);
+        };
+        window.addEventListener('solicitar-eliminacion-formato', handleConfirmEvent);
+        return () => window.removeEventListener('solicitar-eliminacion-formato', handleConfirmEvent);
+    }, []);
+
     async function handleCrearFormato(tipoSeleccionado) {
         setError('');
         setLoading(true);
@@ -311,6 +347,13 @@ function Dashboard({ logout }) {
 
     return (
         <div className="flex bg-white min-h-screen">
+            <ConfirmDialog
+                show={showConfirmDelete}
+                title="¿Eliminar formato?"
+                message="Esta acción eliminará el formato permanentemente."
+                onConfirm={handleDeleteFormato}
+                onCancel={() => setShowConfirmDelete(false)}
+            />
             <Sidebar nombre={usuario.name} rol={usuario.role} logout={logout}>
                 <SidebarItem
                     icon={<Plus size={20} />}
