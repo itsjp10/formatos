@@ -193,8 +193,8 @@ function Dashboard({ logout }) {
             // Construye la estructura base del formato
             const columnas = plantilla.estructura.headers
             const filas = plantilla.estructura.filas
-            const numSubfilas = plantilla.estructura.numSubfilas || 3; 
-            const titulos = plantilla.estructura.titulos || '';           
+            const numSubfilas = plantilla.estructura.numSubfilas || 3;
+            const titulos = plantilla.estructura.titulos || '';
 
 
             const estructuraCompleta = {
@@ -241,6 +241,30 @@ function Dashboard({ logout }) {
             setLoading(false);
         }
     }
+
+    const handleRenombrar = async (formatoID, nuevoNombre) => {
+        try {
+            const res = await fetch(`/api/formatos/${formatoID}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: nuevoNombre }),
+            })
+
+            if (!res.ok) throw new Error('Error al actualizar el nombre')
+
+            const formatoActualizado = await res.json()
+            // Actualiza el estado local de `formatos` con la respuesta del backend
+            setFormatos((prev) =>
+                prev.map((f) =>
+                    f.formatoID === formatoID ? { ...f, name: formatoActualizado.name } : f
+                )
+            )
+        } catch (error) {
+            console.error('Error al renombrar:', error)
+        }
+    }
+
+
 
 
     const handleSeleccionarFormato = (formatoID) => {
@@ -321,6 +345,8 @@ function Dashboard({ logout }) {
                         tipo="formatoItem"
                         active={activeSidebarItem === formato.formatoID}
                         onClick={() => handleSeleccionarFormato(formato.formatoID)}
+                        formatoID={formato.formatoID}
+                        onRenombrar={handleRenombrar}
                     />
                 ))}
             </Sidebar>
@@ -344,13 +370,13 @@ function Dashboard({ logout }) {
                 {pantalla === "Formato" && (
                     <div className="p-4 text-black w-full max-w-5xl">
                         <Formato
-                            key={selectedIdFormato}                            
+                            key={selectedIdFormato}
                             contenidoFormato={formatoData}
                             onGuardar={handleGuardarFormato}
                             rol={usuario.role}
-                            firma={firmaSeleccionada}     
-                            tipoFormato={tipoFormato}                       
-                            
+                            firma={firmaSeleccionada}
+                            tipoFormato={tipoFormato}
+
                         />
                         {error && <div className="mt-2 text-red-500">{error}</div>}
                     </div>

@@ -65,23 +65,25 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
 
             {/* Contenido visible del encabezado */}
             <div className="border border-black"
-                style={{ width: hayFilas ? 'calc(100% - 40px)': '100%' }}>
+                style={{ width: hayFilas ? 'calc(100% - 40px)' : '100%' }}>
                 {/* Título y datos superiores */}
-                <div className="flex justify-between border-b border-black p-2 font-semibold text-center">
-                    <div className="w-full text-left">
-                        <h1 className='text-[24px]'>{tipoFormato}</h1>
-                        <div className="flex gap-4 mt-1 text-xs">
+                <div className="p-2">
+                    <h1 className='text-[24px] font-bold'>{tipoFormato}</h1>
+                    <div className="flex justify-between text-xs w-full mt-1 font-semibold">
+                        <div className="flex-1 text-left">
                             <span>COD. {titulos.cod}</span>
+                        </div>
+                        <div className="flex-1 text-center">
                             <span>APROBÓ: {titulos.aprobo}</span>
                         </div>
-                    </div>
-                    <div className="text-right whitespace-nowrap text-xs self-start">
-                        <span>FECHA DE EMISIÓN: {titulos.fechaEmision}</span>
+                        <div className="flex-1 text-right">
+                            <span>FECHA DE EMISIÓN: {titulos.fechaEmision}</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* Campos tipo formulario */}
-                <div className="grid grid-cols-4 border-b border-black text-xs">
+                <div className="grid grid-cols-4 border-t border-b border-black text-xs">
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">OBRA:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
