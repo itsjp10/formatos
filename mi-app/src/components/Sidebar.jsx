@@ -68,8 +68,6 @@ export default function Sidebar({ children, nombre, rol, logout }) {
 
 export function SidebarItem({ icon, text, active, alert, tipo, onClick, formatoID, onRenombrar }) {
   const { expanded } = useContext(SidebarContext)
-
-  // Si es formatoItem, renderiza como SidebarItem normal pero sin icono
   if (tipo === "formatoItem" && expanded) {
     const [showMenu, setShowMenu] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
@@ -77,26 +75,22 @@ export function SidebarItem({ icon, text, active, alert, tipo, onClick, formatoI
     const inputRef = useRef(null)
     const menuRef = useRef()
 
-    // 1️⃣ sincroniza solo cuando no editas
     useEffect(() => {
-      if (!isEditing) {
-        setNombreEditado(text);
-      }
-    }, [text, isEditing]);
+      setNombreEditado(text);
+    }, [text]);
 
-    // 2️⃣ listener global
     useEffect(() => {
       function handleClickOutside(e) {
         const fueraInput = inputRef.current && !inputRef.current.contains(e.target);
         const fueraMenu = menuRef.current && !menuRef.current.contains(e.target);
 
-        if (fueraInput) finalizarEdicion();      // siempre cierra la edición
-        if (fueraMenu) setShowMenu(false);      // abre/cierra menú sin depender de isEditing
+        if (fueraInput) finalizarEdicion();
+        if (fueraMenu) setShowMenu(false);
       }
 
       document.addEventListener("mousedown", handleClickOutside);
       return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []); // ⬅️ sin dependencias; no vuelve a registrarse en cada render
+    }, []);
 
 
     useEffect(() => {
@@ -106,15 +100,15 @@ export function SidebarItem({ icon, text, active, alert, tipo, onClick, formatoI
       }
     }, [isEditing]);
 
-    // 3️⃣ finaliza la edición
+
     const finalizarEdicion = () => {
-      if (!isEditing) return;                   // evita dobles llamadas
+      if (!isEditing) return;
       setIsEditing(false);
 
       const nuevo = nombreEditado.trim();
       if (nuevo && nuevo !== text) {
-        setNombreEditado(nuevo);                // actualización optimista
-        onRenombrar?.(formatoID, nuevo);        // llama al padre => PUT + setFormatos
+        setNombreEditado(nuevo);
+        onRenombrar?.(formatoID, nuevo);
       }
     };
     return (
