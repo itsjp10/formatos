@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { NextResponse } from 'next/server'
 
 export async function PUT(req, { params }) {
   const { id } = params
@@ -27,21 +28,21 @@ export async function PUT(req, { params }) {
   }
 }
 
-export async function DELETE(req, { params }) {
-  const { id } = params;
+export async function DELETE(req, context) {
+  const { id } = await context.params;
 
   if (!id) {
-    return new Response(JSON.stringify({ error: 'Falta el ID del formato a eliminar' }), { status: 400 })
+    return NextResponse.json({ error: 'Falta el ID del formato a eliminar' }, { status: 400 });
   }
 
   try {
-    await prisma.formato.delete({ 
+    await prisma.formato.delete({
       where: { formatoID: id },
-    })
+    });
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 })
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (err) {
-    console.error('Error al eliminar formato:', err)
-    return new Response(JSON.stringify({ error: 'Error al eliminar formato' }), { status: 500 })
+    console.error('Error al eliminar formato:', err);
+    return NextResponse.json({ error: 'Error al eliminar formato' }, { status: 500 });
   }
 }
