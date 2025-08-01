@@ -344,6 +344,7 @@ function Dashboard({ logout }) {
     }
 
     if (!usuario) return <p>No user was found</p>
+    const publicLink = formatos.find(f => f.formatoID === selectedIdFormato)?.publicLink;
 
     return (
         <div className="flex bg-white min-h-screen">
@@ -419,7 +420,7 @@ function Dashboard({ logout }) {
                             rol={usuario.role}
                             firma={firmaSeleccionada}
                             tipoFormato={tipoFormato}
-
+                            publicLink={publicLink}
                         />
                         {error && <div className="mt-2 text-red-500">{error}</div>}
                     </div>

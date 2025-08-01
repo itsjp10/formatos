@@ -21,54 +21,68 @@ model Usuario {
   createdAt DateTime @default(now())
   role      String
 
-  formatos  Formato[]
-  firmas    Firma[]
-  plantillas PlantillaFormato[]
+  formatos          Formato[]
+  firmas            Firma[]
+  plantillas        PlantillaFormato[]
+  formatosRecibidos Formato[]          @relation("FormatosRecibidos")
+
+  formatoUsuarios FormatoUsuario[]
 }
 
 model Formato {
-  formatoID String   @id @default(uuid())
-  tipo      String
-  data      String
-  name String
-  createdAt DateTime @default(now())
+  formatoID  String   @id @default(uuid())
+  tipo       String
+  data       String
+  name       String
+  createdAt  DateTime @default(now())
+  publicLink String   @unique @default(cuid()) // Nuevo campo para compartir públicamente
 
   usuarioId String
-  ownerID   Usuario  @relation(fields: [usuarioId], references: [userID])
+  ownerID   Usuario @relation(fields: [usuarioId], references: [userID])
 
   plantillaID String?
   plantilla   PlantillaFormato? @relation("PlantillaDeFormato", fields: [plantillaID], references: [plantillaID])
 
-  firmas    Firma[]  // Relación uno a muchos
+  firmas     Firma[] // Relación uno a muchos  
+  receptores Usuario[] @relation("FormatosRecibidos") // Usuarios que han recibido este formato
+
+  formatoUsuarios FormatoUsuario[]
+}
+
+model FormatoUsuario {
+  id        String  @id @default(uuid())
+  userId    String
+  formatoId String
+  creadoPor Boolean @default(false) // indica si es el autor original
+  user      Usuario @relation(fields: [userId], references: [userID])
+  formato   Formato @relation(fields: [formatoId], references: [formatoID])
+
+  @@unique([userId, formatoId]) // un usuario no puede recibir el mismo dos veces
 }
 
 model Firma {
-  firmaID    String   @id @default(uuid())
-  tipo       String
-  imagenUrl  String
-  createdAt  DateTime @default(now())
+  firmaID   String   @id @default(uuid())
+  tipo      String
+  imagenUrl String
+  createdAt DateTime @default(now())
 
-  usuarioId  String
-  usuario    Usuario  @relation(fields: [usuarioId], references: [userID])
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [userID])
 
-  formatoId  String?
-  formato    Formato? @relation(fields: [formatoId], references: [formatoID])
+  formatoId String?
+  formato   Formato? @relation(fields: [formatoId], references: [formatoID])
 }
 
 model PlantillaFormato {
   plantillaID String   @id @default(uuid())
   nombre      String
   descripcion String?
-  estructura  Json     // Campos configurables como labels, tipos, etc.
-  numSubfilas  Int      @default(3) // <-- nuevo campo
+  estructura  Json // Campos configurables como labels, tipos, etc.
+  numSubfilas Int      @default(3) // <-- nuevo campo
   createdAt   DateTime @default(now())
 
   creadoPorId String
-  creadoPor   Usuario  @relation(fields: [creadoPorId], references: [userID])
+  creadoPor   Usuario @relation(fields: [creadoPorId], references: [userID])
 
-  formatos    Formato[] @relation("PlantillaDeFormato") // <--- Campo inverso
+  formatos Formato[] @relation("PlantillaDeFormato") // <--- Campo inverso
 }
-
-
-
-

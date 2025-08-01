@@ -5,7 +5,7 @@ import { set } from 'date-fns';
 import EncabezadoFormato from './EncabezadoFormato';
 
 
-function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
+function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicLink }) {
     const [data, setData] = useState(contenidoFormato || {});
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
@@ -292,6 +292,26 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
 
 
             </table>
+            {publicLink && (
+                <div className="mb-4 flex items-center justify-between px-2">
+                    <span className="text-xs text-gray-600">
+                        Enlace público:
+                        <span className="font-mono ml-1 text-blue-600 underline">
+                            {`${window.location.origin}/formato/${publicLink}`}
+                        </span>
+                    </span>
+                    <button
+                        onClick={() =>
+                            navigator.clipboard.writeText(`${window.location.origin}/formato/${publicLink}`)
+                        }
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded text-xs transition"
+                    >
+                        Copiar enlace
+                    </button>
+                </div>
+            )}
+
+
             {/* Botón anclado abajo a la izquierda */}
             <button
                 type="button"
@@ -331,6 +351,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                                                 filas: rows,
                                                 columnas: headers,
                                                 numSubfilas,
+                                                titulos: titulos,
                                                 firmas: nuevasFirmas,
                                             };
                                             setData(nuevoData);
@@ -362,6 +383,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                                     filas: rows,
                                     columnas: headers,
                                     numSubfilas,
+                                    titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
                                 setData(nuevoData);
@@ -401,6 +423,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                                                 filas: rows,
                                                 columnas: headers,
                                                 numSubfilas,
+                                                titulos: titulos,
                                                 firmas: nuevasFirmas,
                                             };
                                             setData(nuevoData);
@@ -432,6 +455,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                                     filas: rows,
                                     columnas: headers,
                                     numSubfilas,
+                                    titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
                                 setData(nuevoData);
@@ -471,6 +495,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                                                 filas: rows,
                                                 columnas: headers,
                                                 numSubfilas,
+                                                titulos: titulos,
                                                 firmas: nuevasFirmas,
                                             };
                                             setData(nuevoData);
@@ -502,6 +527,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                                     filas: rows,
                                     columnas: headers,
                                     numSubfilas,
+                                    titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
                                 setData(nuevoData);
