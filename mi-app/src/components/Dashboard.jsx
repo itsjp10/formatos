@@ -10,6 +10,7 @@ import Firma from './Firma';
 import ConfirmDialog from './ConfirmDialog';
 
 import io from 'socket.io-client' // usamos sockets para que los formatos se actualicen en tiempo real
+import socket from '../lib/socket' // ajusta la ruta
 
 
 
@@ -26,7 +27,44 @@ function Dashboard({ logout }) {
     const [formatoData, setFormatoData] = useState(null)
     const [firmas, setFirmas] = useState([])
     const [selectedFirma, setSelectedFirma] = useState(null)
-    const [isCompartido, setIsCompartido] = useState(false)
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) setUsuario(JSON.parse(storedUser))
+
+        const storedFirmaId = localStorage.getItem("selectedFirmaId");
+        if (storedFirmaId) {
+            setSelectedFirma(storedFirmaId);
+        }
+
+        setLoading(false)
+    }, [])
+
+    const isCompartido = formatosCompartidos.some(f => f.formatoID === selectedIdFormato);
+
+
+    //funcion para refrescar los formatos:
+    const refreshFormatos = () => {
+        if (usuario) {
+            socket.emit('getFormatos', usuario.userID)
+        }
+    }
+
+    useEffect(() => {
+        const handleRefrescar = (userIdTarget) => {
+            if (userIdTarget === usuario?.userID) {
+                console.log('♻️ Refrescando formatos por cambio remoto');
+                socket.emit('getFormatos', usuario.userID);
+            }
+        };
+
+        socket.on('refrescarFormatosPara', handleRefrescar);
+
+        return () => {
+            socket.off('refrescarFormatosPara', handleRefrescar);
+        };
+    }, [usuario]);
+
 
     // Firma seleccionada
     const firmaSeleccionada = firmas.find((firma) => firma.firmaID === selectedFirma);
@@ -44,22 +82,46 @@ function Dashboard({ logout }) {
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [formatoToDelete, setFormatoToDelete] = useState(null);
 
-    //useEffect para manejar la conexión a los usuarios con sockets
-    const socket = io('http://localhost:4000')
+    //primer fetch de formatos con sockets se hace una sola vez al comenzar la app
     useEffect(() => {
-        if (!usuario) return
+        if (!usuario) return;
 
-        socket.emit('getFormatos', usuario.userID)
+        socket.connect();
 
-        socket.on('formatosData', ({ formatos, compartidos }) => {
-            setFormatos(formatos)
-            setFormatosCompartidos(compartidos)
-        })
+        const handleFormatosData = ({ formatos, compartidos }) => {
+            setFormatos(formatos);
+            setFormatosCompartidos(compartidos);
+            console.log("se termina de setear for y compartido")
+            console.log(compartidos)
 
-        socket.on('error', msg => setError(msg))
+            const lista = isCompartido ? compartidos : formatos;
+            console.log("isCompartido", isCompartido)
 
-        return () => socket.disconnect()
-    }, [usuario])
+            const formatoActualizado = lista.find(f => f.formatoID === selectedIdFormato);
+
+            if (formatoActualizado) {
+                setFormatoData(JSON.parse(formatoActualizado.data));
+            }
+        };
+
+
+        const handleSocketError = (msg) => {
+            setError(msg);
+        };
+
+        socket.on('formatosData', handleFormatosData);
+        socket.on('error', handleSocketError);
+
+        // Emitir cuando usuario ya esté listo
+        socket.emit('getFormatos', usuario.userID);
+
+        return () => {
+            socket.off('formatosData', handleFormatosData);
+            socket.off('error', handleSocketError);
+            socket.disconnect();
+        };
+    }, [usuario]);
+
 
     const handleDeleteFormato = async () => {
         if (!formatoToDelete) return;
@@ -152,52 +214,6 @@ function Dashboard({ logout }) {
     };
 
     useEffect(() => {
-        if (!usuario) return
-
-        const fetchDatos = async () => {
-            setError('')
-
-            try {
-                // Fetch de formatos normales
-                const resFormatos = await fetch(`/api/formatos?usuarioId=${usuario.userID}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                })
-
-                if (!resFormatos.ok) {
-                    const { error } = await resFormatos.json()
-                    throw new Error(error || 'Error al obtener tus formatos')
-                }
-
-                const formatosData = await resFormatos.json()
-                setFormatos(formatosData)
-
-                // Fetch de formatos compartidos
-                const resCompartidos = await fetch(`/api/formatos/compartidos?usuarioId=${usuario.userID}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                })
-
-                if (!resCompartidos.ok) {
-                    const { error } = await resCompartidos.json()
-                    throw new Error(error || 'Error al obtener formatos compartidos')
-                }
-
-                const compartidosData = await resCompartidos.json()
-                setFormatosCompartidos(compartidosData)
-
-            } catch (err) {
-                setError(err.message)
-            }
-        }
-
-        fetchDatos()
-    }, [usuario])
-
-
-    useEffect(() => {
         const fetchFirmas = async () => {
             setError('')
             if (!usuario) return
@@ -220,18 +236,6 @@ function Dashboard({ logout }) {
 
         fetchFirmas()
     }, [usuario])
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) setUsuario(JSON.parse(storedUser))
-
-        const storedFirmaId = localStorage.getItem("selectedFirmaId");
-        if (storedFirmaId) {
-            setSelectedFirma(storedFirmaId);
-        }
-
-        setLoading(false)
-    }, [])
 
     useEffect(() => {
         const fetchTipoFormatos = async () => {
@@ -353,7 +357,7 @@ function Dashboard({ logout }) {
     const handleSeleccionarFormato = (formatoID, esCompartido = false) => {
         const lista = esCompartido ? formatosCompartidos : formatos;
         const formato = lista.find(f => f.formatoID === formatoID)
-        setIsCompartido(esCompartido ? true : false)
+        console.log("esCompartido de handleSeleccionarFormato", isCompartido)
 
         if (formato) {
             setFormatoData(JSON.parse(formato.data))
@@ -401,9 +405,12 @@ function Dashboard({ logout }) {
                     )
                 );
             }
+            // Emitimos para refrescar los cambios con socket
+            refreshFormatos()
         } catch (err) {
             setError(err.message);
         } finally {
+            socket.emit('formatoActualizado', { formatoID: selectedIdFormato })
             setLoading(false);
         }
     }

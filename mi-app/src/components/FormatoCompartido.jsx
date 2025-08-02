@@ -331,7 +331,6 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
                 <div className="flex flex-col items-center w-1/3">
                     <div className="h-20 mb-2 flex items-center justify-center">
                         <div>
-                            {console.log("isFirmadosup: ", isFirmado.supervisor)}
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}

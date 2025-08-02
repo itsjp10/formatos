@@ -28,8 +28,12 @@ io.on('connection', (socket) => {
                     formato: true,
                 },
             })
+            const formatoIds = compartidos.map((f) => f.formatoId);
+            const soloFormatos = await prisma.formato.findMany({
+                where: { formatoID: { in: formatoIds } }
+            });
 
-            const soloFormatos = compartidos.map((f) => f.formato)
+            //const soloFormatos = compartidos.map((f) => f.formato)
 
             socket.emit('formatosData', { formatos, compartidos: soloFormatos })
         } catch (err) {
@@ -37,7 +41,39 @@ io.on('connection', (socket) => {
         }
     })
 
+    socket.on('formatoActualizado', async ({ formatoID }) => {
+        try {
+            // Obtener el formato
+            const formato = await prisma.formato.findUnique({
+                where: { formatoID: formatoID },
+            });
+
+            if (!formato) return;
+
+            // Usuarios compartidos
+            const compartidoCon = await prisma.formatoUsuario.findMany({
+                where: { formatoId: formatoID },
+            });
+
+            // Todos los usuarios que deben refrescar (creador + compartidos)
+            const usuariosARefrescar = new Set([
+                formato.usuarioId,
+                ...compartidoCon.map(fu => fu.userId)
+            ]);
+
+            // Emitir a cada uno individualmente
+            usuariosARefrescar.forEach((userId) => {
+                io.emit('refrescarFormatosPara', userId);
+            });
+        } catch (err) {
+            console.error('Error en formatoActualizado:', err);
+        }
+    });
+
+
 })
+
+
 
 const PORT = 4000
 httpServer.listen(PORT, () => {
