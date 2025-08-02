@@ -1,42 +1,52 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 
 export async function POST(req) {
-  const session = await getServerSession({ req, ...authOptions })
-
-  if (!session) {
-    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  }
-
-  const { publicLink } = await req.json()
-
   try {
+    const userId = cookies().get('userId')?.value
+
+    if (!userId) {
+      console.log('❌ Usuario no autenticado')
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
+    const body = await req.json()
+    const { publicLink } = body
+
+    console.log('📨 PublicLink recibido:', publicLink)
+
+    if (!publicLink || typeof publicLink !== 'string') {
+      console.log('⚠️ publicLink ausente o inválido')
+      return NextResponse.json({ error: 'publicLink requerido' }, { status: 400 })
+    }
+
     const formato = await prisma.formato.findUnique({
       where: { publicLink },
     })
 
     if (!formato) {
+      console.log('❌ Formato no encontrado con ese publicLink')
       return NextResponse.json({ error: 'Formato no encontrado' }, { status: 404 })
     }
 
-    const userId = session.user.userID
+    console.log('✅ Formato encontrado:', formato.formatoID)
 
-    // Verifica si ya fue aceptado antes
-    const yaExiste = await prisma.formatoUsuario.findFirst({
+    const existente = await prisma.formatoUsuario.findUnique({
       where: {
-        userId,
-        formatoId: formato.formatoID,
+        userId_formatoId: {
+          userId,
+          formatoId: formato.formatoID,
+        },
       },
     })
 
-    if (yaExiste) {
-      return NextResponse.json({ success: true, mensaje: 'Ya tienes acceso a este formato.' })
+    if (existente) {
+      console.log('⚠️ Ya existe relación FormatoUsuario')
+      return NextResponse.json({ error: 'Ya tienes este formato' }, { status: 400 })
     }
 
-    // Crea relación en tabla intermedia
-    await prisma.formatoUsuario.create({
+    const formatoRecibido = await prisma.formatoUsuario.create({
       data: {
         userId,
         formatoId: formato.formatoID,
@@ -44,9 +54,10 @@ export async function POST(req) {
       },
     })
 
-    return NextResponse.json({ success: true })
+    console.log('✅ Formato vinculado con éxito')
+    return NextResponse.json({ success: true, formato: formatoRecibido })
   } catch (err) {
-    console.error(err)
-    return NextResponse.json({ error: 'Error al aceptar formato' }, { status: 500 })
+    console.error('❌ Error al aceptar formato:', err)
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

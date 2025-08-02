@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import React from 'react';
 import { Signature, Trash2, Plus } from "lucide-react"
-import { set } from 'date-fns';
 import EncabezadoFormato from './EncabezadoFormato';
 
 
-function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicLink }) {
+function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
     const [data, setData] = useState(contenidoFormato || {});
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
@@ -16,83 +15,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
         residente: !!firmas.firmaRes,
         supervisor: !!firmas.firmaSup,
     });
-
     const [titulos, setTitulos] = useState(contenidoFormato.titulos || '')
-
-    const addRow = () => {
-        const newRow = {};
-        headers.forEach((header) => {
-            const subkeys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
-            subkeys.forEach((key) => {
-                for (let i = 0; i < numSubfilas; i++) {
-                    const fullKey = `${header.label}-${key}-${i}`;
-                    newRow[fullKey] = '';
-                }
-            });
-        });
-        const nuevasFilas = [...rows, newRow]; // usamos este nuevasFilas porque React no actualiza el estado inmediatamente
-
-        setRows(nuevasFilas);
-
-        const nuevoData = {
-            filas: nuevasFilas,
-            columnas: headers,
-            numSubfilas,
-            titulos: titulos,
-            firmas: firmas,
-        };
-        setData(nuevoData);
-        onGuardar(nuevoData);
-    };
-
-    const deleteRow = (index) => {
-        const updatedRows = rows.filter((_, i) => i !== index);
-        setRows(updatedRows);
-
-        const nuevoData = {
-            filas: updatedRows,
-            columnas: headers,
-            numSubfilas,
-            titulos: titulos,
-            firmas: firmas,
-        };
-        setData(nuevoData);
-        onGuardar(nuevoData);
-    };
-
-    const updateCell = (rowIndex, key, value) => {
-        const updated = [...rows];
-        updated[rowIndex][key] = value;
-        setRows(updated);
-
-        const nuevoData = {
-            filas: updated,
-            columnas: headers,
-            numSubfilas,
-            titulos: titulos,
-            firmas: firmas,
-        };
-        setData(nuevoData);
-        onGuardar(nuevoData);
-    };
-
-
-    const toggleCheckbox = (rowIndex, key, value) => {
-        const updated = [...rows];
-        updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
-        setRows(updated);
-
-        const nuevoData = {
-            filas: updated,
-            columnas: headers,
-            numSubfilas,
-            titulos: titulos,
-            firmas: firmas,
-        };
-        setData(nuevoData);
-        onGuardar(nuevoData);
-    };
-
 
     const isSimpleField = (label) => ['APTO', 'OBSERVACIONES'].includes(label);
     const isDateField = (label) => label === 'FECHA';
@@ -104,19 +27,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
             <EncabezadoFormato
                 contenidoFormato={contenidoFormato}
                 tipoFormato={tipoFormato}
-                hayFilas={rows.length > 0}
-                onTitulosChange={(titulosActualizados) => {
-                    const nuevoData = {
-                        filas: rows,
-                        columnas: headers,
-                        numSubfilas,
-                        titulos: titulosActualizados,
-                        firmas: firmas,
-                    };
-                    setTitulos(titulosActualizados);
-                    setData(nuevoData);
-                    onGuardar(nuevoData);
-                }}
+                hayFilas={false}
             />
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
@@ -226,11 +137,8 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                                                     >
                                                         <textarea
                                                             value={row[`${header.label}-${key}-0`] || ''}
-                                                            onChange={(e) =>
-                                                                updateCell(rowIndex, `${header.label}-${key}-0`, e.target.value)
-                                                            }
                                                             className="w-full h-full min-h-[60px] border-none outline-none resize-none"
-                                                            placeholder={`Escriba ${header.label.toLowerCase()}...`}
+                                                            readOnly
                                                         />
                                                     </td>
                                                 );
@@ -247,7 +155,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                                                         <input
                                                             type="text"
                                                             value={row[fullKey] || ''}
-                                                            onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
+                                                            readOnly
                                                             className="w-full border-none outline-none"
                                                         />
                                                     </td>
@@ -258,37 +166,18 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                                                 <td
                                                     key={`c-${hIndex}-${kIndex}`}
                                                     className="border px-2 py-1 text-center cursor-pointer w-7"
-                                                    onClick={() => toggleCheckbox(rowIndex, fullKey, 'C')}
                                                 >
                                                     {row[fullKey] === 'C' ? '✔' : ''}
                                                 </td>,
                                                 <td
                                                     key={`nc-${hIndex}-${kIndex}`}
                                                     className="border px-2 py-1 text-center cursor-pointer w-7 bg-gray-300"
-                                                    onClick={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
                                                 >
                                                     {row[fullKey] === 'NC' ? '✘' : ''}
                                                 </td>
                                             ];
                                         });
                                     })}
-
-                                    {/* Botón eliminar fila solo en la primera subfila */}
-                                    {subIndex === 0 && (
-                                        <td
-                                            rowSpan={numSubfilas}
-                                            className="px-1 py-1 text-center align-middle"
-                                        >
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteRow(rowIndex)}
-                                                className="ml-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-1 shadow-sm transition-colors"
-                                                title="Eliminar fila"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </td>
-                                    )}
                                 </tr>
                             );
                         })
@@ -297,35 +186,6 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
 
 
             </table>
-            {publicLink && (
-                <div className="mb-4 flex items-center justify-between px-2">
-                    <span className="text-xs text-gray-600">
-                        Enlace público:
-                        <span className="font-mono ml-1 text-blue-600 underline">
-                            {`${window.location.origin}/formato/${publicLink}`}
-                        </span>
-                    </span>
-                    <button
-                        onClick={() =>
-                            navigator.clipboard.writeText(`${window.location.origin}/formato/${publicLink}`)
-                        }
-                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded text-xs transition"
-                    >
-                        Copiar enlace
-                    </button>
-                </div>
-            )}
-
-
-            {/* Botón anclado abajo a la izquierda */}
-            <button
-                type="button"
-                onClick={addRow}
-                className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-1 shadow-sm transition-colors"
-                title="Insertar fila debajo"
-            >
-                <Plus className="w-4 h-4" />
-            </button>
 
             <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
                 {/* CONTRATISTA */}
@@ -471,6 +331,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                 <div className="flex flex-col items-center w-1/3">
                     <div className="h-20 mb-2 flex items-center justify-center">
                         <div>
+                            {console.log("isFirmadosup: ", isFirmado.supervisor)}
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}

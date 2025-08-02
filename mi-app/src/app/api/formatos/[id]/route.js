@@ -36,6 +36,12 @@ export async function DELETE(req, context) {
   }
 
   try {
+    // Eliminar vínculos de formatoUsuario
+    await prisma.formatoUsuario.deleteMany({
+      where: { formatoId: id },
+    });
+
+    // Eliminar el formato
     await prisma.formato.delete({
       where: { formatoID: id },
     });
