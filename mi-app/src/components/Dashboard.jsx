@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Sidebar, { SidebarItem } from './Sidebar'
 import { Signature, Plus, LayoutTemplate, Info } from "lucide-react"
 import Formato from './Formato'
+import FormatoCompartido from './FormatoCompartido'
 import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
 import FirmaUploader from './FirmaUploader';
 import Firma from './Firma';
@@ -14,6 +15,7 @@ function Dashboard({ logout }) {
     const [usuario, setUsuario] = useState(null)
     const [loading, setLoading] = useState(true)
     const [formatos, setFormatos] = useState([])
+    const [formatosCompartidos, setFormatosCompartidos] = useState([])
     const [error, setError] = useState('')
     const [activeSidebarItem, setActiveSidebarItem] = useState(null)
     const [pantalla, setPantalla] = useState('')
@@ -22,6 +24,44 @@ function Dashboard({ logout }) {
     const [formatoData, setFormatoData] = useState(null)
     const [firmas, setFirmas] = useState([])
     const [selectedFirma, setSelectedFirma] = useState(null)
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) setUsuario(JSON.parse(storedUser))
+
+        const storedFirmaId = localStorage.getItem("selectedFirmaId");
+        if (storedFirmaId) {
+            setSelectedFirma(storedFirmaId);
+        }
+
+        setLoading(false)
+    }, [])
+
+    const isCompartido = formatosCompartidos.some(f => f.formatoID === selectedIdFormato);
+
+
+    //funcion para refrescar los formatos:
+    const refreshFormatos = () => {
+        if (usuario) {
+            socket.emit('getFormatos', usuario.userID)
+        }
+    }
+
+    useEffect(() => {
+        const handleRefrescar = (userIdTarget) => {
+            if (userIdTarget === usuario?.userID) {
+                console.log('♻️ Refrescando formatos por cambio remoto');
+                socket.emit('getFormatos', usuario.userID);
+            }
+        };
+
+        socket.on('refrescarFormatosPara', handleRefrescar);
+
+        return () => {
+            socket.off('refrescarFormatosPara', handleRefrescar);
+        };
+    }, [usuario]);
+
 
     // Firma seleccionada
     const firmaSeleccionada = firmas.find((firma) => firma.firmaID === selectedFirma);
@@ -39,10 +79,56 @@ function Dashboard({ logout }) {
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [formatoToDelete, setFormatoToDelete] = useState(null);
 
+    //primer fetch de formatos con sockets se hace una sola vez al comenzar la app
+    useEffect(() => {
+        if (!usuario) return;
+
+        socket.connect();
+
+        const handleFormatosData = ({ formatos, compartidos }) => {
+            setFormatos(formatos);
+            setFormatosCompartidos(compartidos);
+        };
+
+
+        const handleSocketError = (msg) => {
+            setError(msg);
+        };
+
+        socket.on('formatosData', handleFormatosData);
+        socket.on('error', handleSocketError);
+
+        // Emitir cuando usuario ya esté listo
+        socket.emit('getFormatos', usuario.userID);
+
+        return () => {
+            socket.off('formatosData', handleFormatosData);
+            socket.off('error', handleSocketError);
+            socket.disconnect();
+        };
+    }, [usuario]);
+
+    useEffect(() => {
+        if (!selectedIdFormato) return;
+        console.log("isCompartido desde useEffect", isCompartido)
+        const lista = isCompartido ? formatosCompartidos : formatos;
+        const formatoActualizado = lista.find(f => f.formatoID === selectedIdFormato);
+        console.log("se actualizaron los formato y formato compartido")
+
+        if (formatoActualizado) {
+            console.log("se actualizara formatoData de", selectedIdFormato)
+            setFormatoData({... JSON.parse(formatoActualizado.data)});
+            console.log("formatoDATA es", formatoData)
+            
+        }
+    }, [formatos, formatosCompartidos, selectedIdFormato]);
+
+
+
     const handleDeleteFormato = async () => {
         if (!formatoToDelete) return;
         try {
-            const res = await fetch(`/api/formatos/${formatoToDelete}`, { method: 'DELETE' });
+            const res = await fetch(`/api/formatos/${formatoToDelete}`, { method: 'DELETE', credentials: 'include', });
             if (!res.ok) {
                 const { error } = await res.json();
                 throw new Error(error || 'Error al eliminar formato');
@@ -70,6 +156,7 @@ function Dashboard({ logout }) {
             const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/dttndicib/image/upload`, {
                 method: 'POST',
                 body: formData,
+                credentials: 'include',
             });
 
             const cloudData = await cloudRes.json();
@@ -88,6 +175,7 @@ function Dashboard({ logout }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(firmaPayload),
+                credentials: 'include',
             });
 
             if (!dbRes.ok) {
@@ -112,7 +200,7 @@ function Dashboard({ logout }) {
 
     const handleEliminarFirma = async (firmaID) => {
         try {
-            const res = await fetch(`/api/firmas/${firmaID}`, { method: 'DELETE' });
+            const res = await fetch(`/api/firmas/${firmaID}`, { method: 'DELETE', credentials: 'include', });
 
             if (!res.ok) {
                 const data = await res.json();
@@ -128,29 +216,6 @@ function Dashboard({ logout }) {
     };
 
     useEffect(() => {
-        const fetchFormatos = async () => {
-            setError('')
-            if (!usuario) return
-            try {
-                const res = await fetch(`/api/formatos?usuarioId=${usuario.userID}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                if (!res.ok) {
-                    const { error } = await res.json()
-                    throw new Error(error || 'Error desconocido')
-                }
-                const formats = await res.json()
-                setFormatos(formats)
-            } catch (err) {
-                setError(err.message)
-            }
-        }
-
-        fetchFormatos()
-    }, [usuario])
-
-    useEffect(() => {
         const fetchFirmas = async () => {
             setError('')
             if (!usuario) return
@@ -158,6 +223,7 @@ function Dashboard({ logout }) {
                 const res = await fetch(`/api/firmas?usuarioId=${usuario.userID}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                 })
                 if (!res.ok) {
                     const { error } = await res.json()
@@ -172,18 +238,6 @@ function Dashboard({ logout }) {
 
         fetchFirmas()
     }, [usuario])
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) setUsuario(JSON.parse(storedUser))
-
-        const storedFirmaId = localStorage.getItem("selectedFirmaId");
-        if (storedFirmaId) {
-            setSelectedFirma(storedFirmaId);
-        }
-
-        setLoading(false)
-    }, [])
 
     useEffect(() => {
         const fetchTipoFormatos = async () => {
@@ -256,6 +310,7 @@ function Dashboard({ logout }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(nuevoFormato),
+                credentials: 'include',
             });
 
             if (!res.ok) {
@@ -284,6 +339,7 @@ function Dashboard({ logout }) {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: nuevoNombre }),
+                credentials: 'include',
             })
 
             if (!res.ok) throw new Error('Error al actualizar el nombre')
@@ -300,11 +356,9 @@ function Dashboard({ logout }) {
         }
     }
 
-
-
-
-    const handleSeleccionarFormato = (formatoID) => {
-        const formato = formatos.find(f => f.formatoID === formatoID)
+    const handleSeleccionarFormato = (formatoID, esCompartido = false) => {
+        const lista = esCompartido ? formatosCompartidos : formatos;
+        const formato = lista.find(f => f.formatoID === formatoID)
         if (formato) {
             setFormatoData(JSON.parse(formato.data))
             setTipoFormato(formato.tipo)
@@ -315,36 +369,54 @@ function Dashboard({ logout }) {
     }
 
     async function handleGuardarFormato(dataActualizada) {
-        setLoading(true)
-        setError('')
+        setLoading(true);
+        setError('');
+
         try {
             const res = await fetch(`/api/formatos/${selectedIdFormato}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: JSON.stringify(dataActualizada) }),
-            })
+                credentials: 'include',
+            });
+
             if (!res.ok) {
-                const { error } = await res.json()
-                throw new Error(error || 'Error al guardar formato')
+                const { error } = await res.json();
+                throw new Error(error || 'Error al guardar formato');
             }
-            // Actualiza el formato en el estado local
-            setFormatoData(dataActualizada)
-            setFormatos(prev =>
-                prev.map(f =>
-                    f.formatoID === selectedIdFormato
-                        ? { ...f, data: JSON.stringify(dataActualizada) }
-                        : f
-                )
-            )
+
+            // ✅ Actualiza el formato en el estado local
+            setFormatoData(dataActualizada);
+
+            if (isCompartido) {
+                setFormatosCompartidos(prev =>
+                    prev.map(f =>
+                        f.formatoID === selectedIdFormato
+                            ? { ...f, data: JSON.stringify(dataActualizada) }
+                            : f
+                    )
+                );
+            } else {
+                setFormatos(prev =>
+                    prev.map(f =>
+                        f.formatoID === selectedIdFormato
+                            ? { ...f, data: JSON.stringify(dataActualizada) }
+                            : f
+                    )
+                );
+            }
+            // Emitimos para refrescar los cambios con socket
+            refreshFormatos()
         } catch (err) {
-            setError(err.message)
+            setError(err.message);
         } finally {
-            setLoading(false)
+            socket.emit('formatoActualizado', { formatoID: selectedIdFormato })
+            setLoading(false);
         }
-    }
+    } 
+
 
     if (!usuario) return <p>No user was found</p>
-    const publicLink = formatos.find(f => f.formatoID === selectedIdFormato)?.publicLink;
 
     return (
         <div className="flex bg-white min-h-screen">
@@ -393,6 +465,25 @@ function Dashboard({ logout }) {
                         onRenombrar={handleRenombrar}
                     />
                 ))}
+                <SidebarItem
+                    text="Formatos compartidos conmigo"
+                    active={activeSidebarItem === "Formatos"}
+                    onClick={() => setActiveSidebarItem("Formatos")}
+                />
+                {(formatosCompartidos || []).map((formato) => (
+                    <SidebarItem
+                        key={formato.formatoID}
+                        text={formato.name}
+                        tipo="formatoItem"
+                        active={activeSidebarItem === `compartido-${formato.formatoID}`}
+                        onClick={() => {
+                            handleSeleccionarFormato(formato.formatoID, true); // true = es compartido
+                            setActiveSidebarItem(`compartido-${formato.formatoID}`);
+                        }}
+                        formatoID={formato.formatoID}
+                        onRenombrar={handleRenombrar}
+                    />
+                ))}
             </Sidebar>
             <div className="flex-1 flex items-center justify-center">
                 {pantalla === "" && (
@@ -420,7 +511,7 @@ function Dashboard({ logout }) {
                             rol={usuario.role}
                             firma={firmaSeleccionada}
                             tipoFormato={tipoFormato}
-                            publicLink={publicLink}
+
                         />
                         {error && <div className="mt-2 text-red-500">{error}</div>}
                     </div>
@@ -432,6 +523,7 @@ function Dashboard({ logout }) {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ ...plantilla, creadoPorId: usuario.userID }),
+                                credentials: 'include',
                             });
 
                             if (!res.ok) {
