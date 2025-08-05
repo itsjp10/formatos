@@ -24,6 +24,7 @@ function Dashboard({ logout }) {
     const [formatoData, setFormatoData] = useState(null)
     const [firmas, setFirmas] = useState([])
     const [selectedFirma, setSelectedFirma] = useState(null)
+    const [isCompartido, setIsCompartido] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user")
@@ -36,10 +37,6 @@ function Dashboard({ logout }) {
 
         setLoading(false)
     }, [])
-
-    if (formatosCompartidos) {
-        const isCompartido = formatosCompartidos.some(f => f.formatoID === selectedIdFormato);
-    }
 
 
     // Firma seleccionada
@@ -58,7 +55,7 @@ function Dashboard({ logout }) {
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [formatoToDelete, setFormatoToDelete] = useState(null);
 
-    //primer fetch de formatos con sockets se hace una sola vez al comenzar la app
+    //primer fetch de formatos 
     useEffect(() => {
         if (!usuario) return
 
@@ -355,6 +352,7 @@ function Dashboard({ logout }) {
 
     const handleSeleccionarFormato = (formatoID, esCompartido = false) => {
         const lista = esCompartido ? formatosCompartidos : formatos;
+        setIsCompartido(esCompartido)
         const formato = lista.find(f => f.formatoID === formatoID)
         if (formato) {
             setFormatoData(JSON.parse(formato.data))
@@ -402,8 +400,6 @@ function Dashboard({ logout }) {
                     )
                 );
             }
-            // Emitimos para refrescar los cambios con socket
-            refreshFormatos()
         } catch (err) {
             setError(err.message);
         } finally {
@@ -466,8 +462,9 @@ function Dashboard({ logout }) {
                     active={activeSidebarItem === "Formatos"}
                     onClick={() => setActiveSidebarItem("Formatos")}
                 />
-                {(formatosCompartidos || []).map((formato) => (
-                    <SidebarItem
+                {(formatosCompartidos || []).map((formato) => {
+                    {console.log("This is formato compartido ID",formato.formatoID)}
+                    <SidebarItem                        
                         key={formato.formatoID}
                         text={formato.name}
                         tipo="formatoItem"
@@ -479,7 +476,7 @@ function Dashboard({ logout }) {
                         formatoID={formato.formatoID}
                         onRenombrar={handleRenombrar}
                     />
-                ))}
+                })}
             </Sidebar>
             <div className="flex-1 flex items-center justify-center">
                 {pantalla === "" && (
