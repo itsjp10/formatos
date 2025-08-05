@@ -37,30 +37,9 @@ function Dashboard({ logout }) {
         setLoading(false)
     }, [])
 
-    const isCompartido = formatosCompartidos.some(f => f.formatoID === selectedIdFormato);
-
-
-    //funcion para refrescar los formatos:
-    const refreshFormatos = () => {
-        if (usuario) {
-            socket.emit('getFormatos', usuario.userID)
-        }
+    if (formatosCompartidos) {
+        const isCompartido = formatosCompartidos.some(f => f.formatoID === selectedIdFormato);
     }
-
-    useEffect(() => {
-        const handleRefrescar = (userIdTarget) => {
-            if (userIdTarget === usuario?.userID) {
-                console.log('♻️ Refrescando formatos por cambio remoto');
-                socket.emit('getFormatos', usuario.userID);
-            }
-        };
-
-        socket.on('refrescarFormatosPara', handleRefrescar);
-
-        return () => {
-            socket.off('refrescarFormatosPara', handleRefrescar);
-        };
-    }, [usuario]);
 
 
     // Firma seleccionada
@@ -81,32 +60,50 @@ function Dashboard({ logout }) {
 
     //primer fetch de formatos con sockets se hace una sola vez al comenzar la app
     useEffect(() => {
-        if (!usuario) return;
+        if (!usuario) return
 
-        socket.connect();
+        const fetchDatos = async () => {
+            setError('')
 
-        const handleFormatosData = ({ formatos, compartidos }) => {
-            setFormatos(formatos);
-            setFormatosCompartidos(compartidos);
-        };
+            try {
+                // Fetch de formatos normales
+                const resFormatos = await fetch(`/api/formatos?usuarioId=${usuario.userID}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                })
 
+                if (!resFormatos.ok) {
+                    const { error } = await resFormatos.json()
+                    throw new Error(error || 'Error al obtener tus formatos')
+                }
 
-        const handleSocketError = (msg) => {
-            setError(msg);
-        };
+                const formatosData = await resFormatos.json()
+                setFormatos(formatosData)
 
-        socket.on('formatosData', handleFormatosData);
-        socket.on('error', handleSocketError);
+                // Fetch de formatos compartidos
+                const resCompartidos = await fetch(`/api/formatos/compartidos?usuarioId=${usuario.userID}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                })
 
-        // Emitir cuando usuario ya esté listo
-        socket.emit('getFormatos', usuario.userID);
+                if (!resCompartidos.ok) {
+                    const { error } = await resCompartidos.json()
+                    throw new Error(error || 'Error al obtener formatos compartidos')
+                }
 
-        return () => {
-            socket.off('formatosData', handleFormatosData);
-            socket.off('error', handleSocketError);
-            socket.disconnect();
-        };
-    }, [usuario]);
+                const compartidosData = await resCompartidos.json()
+                setFormatosCompartidos(compartidosData)
+
+            } catch (err) {
+                setError(err.message)
+            }
+        }
+
+        fetchDatos()
+    }, [usuario])
+
 
     useEffect(() => {
         if (!selectedIdFormato) return;
@@ -117,9 +114,9 @@ function Dashboard({ logout }) {
 
         if (formatoActualizado) {
             console.log("se actualizara formatoData de", selectedIdFormato)
-            setFormatoData({... JSON.parse(formatoActualizado.data)});
+            setFormatoData({ ...JSON.parse(formatoActualizado.data) });
             console.log("formatoDATA es", formatoData)
-            
+
         }
     }, [formatos, formatosCompartidos, selectedIdFormato]);
 
@@ -410,10 +407,9 @@ function Dashboard({ logout }) {
         } catch (err) {
             setError(err.message);
         } finally {
-            socket.emit('formatoActualizado', { formatoID: selectedIdFormato })
             setLoading(false);
         }
-    } 
+    }
 
 
     if (!usuario) return <p>No user was found</p>
