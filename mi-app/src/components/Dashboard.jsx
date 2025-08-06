@@ -466,13 +466,13 @@ function Dashboard({ logout }) {
                 />
                 {(formatosCompartidos || []).map((compartido) => (
                     <SidebarItem
-                        key={compartido.formatoId}
-                        text={compartido.formato.name}
+                        key={compartido.formatoID}
+                        text={compartido.name}
                         tipo="formatoItem"
-                        active={activeSidebarItem === `compartido-${compartido.formatoId}`}
+                        active={activeSidebarItem === compartido.formatoID}
                         onClick={() => {
-                            handleSeleccionarFormato(compartido.formatoId, true); // true = es compartido
-                            setActiveSidebarItem(`compartido-${compartido.formatoId}`);
+                            handleSeleccionarFormato(compartido.formatoID, true); // true = es compartido
+                            setActiveSidebarItem(compartido.formatoID);
                         }}
                     />
                 ))}

@@ -10,7 +10,7 @@ export async function GET(req) {
   }
 
   try {
-    const formatos = await prisma.formatoUsuario.findMany({
+    const relaciones  = await prisma.formatoUsuario.findMany({
       where: {
         userId: usuarioId,
         creadoPor: false
@@ -19,6 +19,9 @@ export async function GET(req) {
         formato: true
       }
     })
+
+    // Extraer solo el formato
+    const formatos = relaciones.map(rel => rel.formato)
 
     return NextResponse.json(formatos)
   } catch (error) {
