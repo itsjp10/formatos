@@ -26,6 +26,7 @@ function Dashboard({ logout }) {
     const [selectedFirma, setSelectedFirma] = useState(null)
     const [isCompartido, setIsCompartido] = useState(false);
 
+    //Se busca en local storage si hay un usuario ya guardado y se carga, igualmente con la firma
     useEffect(() => {
         const storedUser = localStorage.getItem("user")
         if (storedUser) setUsuario(JSON.parse(storedUser))
@@ -42,7 +43,7 @@ function Dashboard({ logout }) {
     // Firma seleccionada
     const firmaSeleccionada = firmas.find((firma) => firma.firmaID === selectedFirma);
 
-    // Tipos de formatos disponibles
+    // Tipos de formatos disponibles, los que el usuario puede elegir
     const [tiposFormatos, setTiposFormatos] = useState([])
     const handleSelectFirma = (firma) => {
         setSelectedFirma(firma);
@@ -91,6 +92,7 @@ function Dashboard({ logout }) {
                 }
 
                 const compartidosData = await resCompartidos.json()
+                console.log("fetch de compartidos_: ",compartidosData)
                 setFormatosCompartidos(compartidosData)
 
             } catch (err) {
@@ -462,21 +464,18 @@ function Dashboard({ logout }) {
                     active={activeSidebarItem === "Formatos"}
                     onClick={() => setActiveSidebarItem("Formatos")}
                 />
-                {(formatosCompartidos || []).map((formato) => {
-                    {console.log("This is formato compartido ID",formato.formatoID)}
-                    <SidebarItem                        
-                        key={formato.formatoID}
-                        text={formato.name}
+                {(formatosCompartidos || []).map((compartido) => (
+                    <SidebarItem
+                        key={compartido.formatoId}
+                        text={compartido.formato.name}
                         tipo="formatoItem"
-                        active={activeSidebarItem === `compartido-${formato.formatoID}`}
+                        active={activeSidebarItem === `compartido-${compartido.formatoId}`}
                         onClick={() => {
-                            handleSeleccionarFormato(formato.formatoID, true); // true = es compartido
-                            setActiveSidebarItem(`compartido-${formato.formatoID}`);
+                            handleSeleccionarFormato(compartido.formatoId, true); // true = es compartido
+                            setActiveSidebarItem(`compartido-${compartido.formatoId}`);
                         }}
-                        formatoID={formato.formatoID}
-                        onRenombrar={handleRenombrar}
                     />
-                })}
+                ))}
             </Sidebar>
             <div className="flex-1 flex items-center justify-center">
                 {pantalla === "" && (
