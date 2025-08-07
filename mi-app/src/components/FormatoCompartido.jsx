@@ -10,7 +10,12 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
     const [rows, setRows] = useState(contenidoFormato.filas || []);
     const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
     const [firmas, setFirmas] = useState(contenidoFormato.firmas || '');
-    const [isFirmado, setIsFirmado] = useState(firmas.firmaRes || firmas.firmaContra || firmas.firmaSup ? true : false);
+    const [isFirmado, setIsFirmado] = useState({
+        contratista: !!firmas.firmaContra,
+        residente: !!firmas.firmaRes,
+        supervisor: !!firmas.firmaSup,
+    })
+
     const [titulos, setTitulos] = useState(contenidoFormato.titulos || '')
 
     const isSimpleField = (label) => ['APTO', 'OBSERVACIONES'].includes(label);
@@ -133,7 +138,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                                     >
                                                         <textarea
                                                             value={row[`${header.label}-${key}-0`] || ''}
-                                                            className="w-full h-full min-h-[60px] border-none outline-none resize-none"
+                                                            className="w-full h-full min-h-[60px] border-none outline-none resize-none "
                                                             readOnly
                                                         />
                                                     </td>
@@ -161,13 +166,13 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                             return [
                                                 <td
                                                     key={`c-${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center cursor-pointer w-7"
+                                                    className="border px-2 py-1 text-center w-7"
                                                 >
                                                     {row[fullKey] === 'C' ? '✔' : ''}
                                                 </td>,
                                                 <td
                                                     key={`nc-${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center cursor-pointer w-7 bg-gray-300"
+                                                    className="border px-2 py-1 text-center w-7 bg-gray-300"
                                                 >
                                                     {row[fullKey] === 'NC' ? '✘' : ''}
                                                 </td>
@@ -192,7 +197,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                             {isFirmado.contratista ? (
                                 <img
                                     src={firmas.firmaContra}
-                                    alt={`Firma ${firmas.firmaContra}`}
+                                    alt={`Firma ${firma.firmaID}`}
                                     className="h-full object-contain"
                                 />
                             ) : rol === "contratista" ? (
@@ -211,7 +216,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                             filas: rows,
                                             columnas: headers,
                                             numSubfilas,
-                                            titulos: titulos,
+                                            titulos,
                                             firmas: nuevasFirmas,
                                         };
                                         setData(nuevoData);
@@ -227,10 +232,10 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
 
                     <div className="w-48 border-t-2 border-black mb-1"></div>
                     <span className="text-sm font-semibold text-center">CONTRATISTA</span>
-                    {(firmas.firmaContra && rol == "contratista") && (
+                    {(isFirmado.contratista && rol == "contratista") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(prev => ({ ...prev, contratista: false }));
+                                setIsFirmado(false);
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaContra: "",
@@ -261,7 +266,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                             {isFirmado.residente ? (
                                 <img
                                     src={firmas.firmaRes}
-                                    alt={`Firma ${firmas.firmaRes}`}
+                                    alt={`Firma ${firma.firmaID}`}
                                     className="h-full object-contain"
                                 />
                             ) : rol === "residente" ? (
@@ -280,7 +285,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                             filas: rows,
                                             columnas: headers,
                                             numSubfilas,
-                                            titulos: titulos,
+                                            titulos,
                                             firmas: nuevasFirmas,
                                         };
                                         setData(nuevoData);
@@ -296,10 +301,10 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
 
                     <div className="w-48 border-t-2 border-black mb-1"></div>
                     <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
-                    {(firmas.firmaRes && rol == "residente") && (
+                    {(isFirmado.residente && rol == "residente") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(prev => ({ ...prev, residente: false }));
+                                setIsFirmado(false);
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaRes: "",
@@ -330,7 +335,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}
-                                    alt={`Firma ${firmas.firmaSup}`}
+                                    alt={`Firma ${firma.firmaID}`}
                                     className="h-full object-contain"
                                 />
                             ) : rol === "supervisor" ? (
@@ -349,7 +354,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                             filas: rows,
                                             columnas: headers,
                                             numSubfilas,
-                                            titulos: titulos,
+                                            titulos,
                                             firmas: nuevasFirmas,
                                         };
                                         setData(nuevoData);
@@ -365,10 +370,10 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
 
                     <div className="w-48 border-t-2 border-black mb-1"></div>
                     <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
-                    {(firmas.firmaSup && rol == "supervisor") && (
+                    {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(prev => ({ ...prev, supervisor: false }));
+                                setIsFirmado(false);
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaSup: "",
