@@ -5,7 +5,8 @@ import { set } from 'date-fns';
 import EncabezadoFormato from './EncabezadoFormato';
 
 
-function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicLink }) {
+function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, firma, publicLink }) {
+    //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar
     const [data, setData] = useState(contenidoFormato || {});
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
@@ -18,6 +19,33 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
     })
 
     const [titulos, setTitulos] = useState(contenidoFormato.titulos || '')
+
+    useEffect(() => {
+        const fetchFormato = async () => {
+            try {
+                const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                })
+
+                if (!res.ok) {
+                    const { error } = await res.json()
+                    throw new Error(error || 'Error al obtener el formato')
+                }
+
+                const formatoData = await res.json()
+                setFormato(formatoData)
+
+            } catch (err) {
+                console.error(err)
+            }
+        }
+
+        if (formatoID) {
+            fetchFormato()
+        }
+    }, [formatoID])
 
     const addRow = () => {
         const newRow = {};

@@ -498,6 +498,7 @@ function Dashboard({ logout }) {
                     <div className="p-4 text-black w-full max-w-5xl">
                         {!isCompartido && (
                             <Formato
+                                formatoID={selectedIdFormato}
                                 key={selectedIdFormato}
                                 contenidoFormato={formatoData}
                                 onGuardar={handleGuardarFormato}
