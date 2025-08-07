@@ -4,7 +4,7 @@ import { Signature, Trash2, Plus } from "lucide-react"
 import EncabezadoFormato from './EncabezadoFormato';
 
 
-function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
+function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
     const [data, setData] = useState(contenidoFormato || {});
     const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
     const [rows, setRows] = useState(contenidoFormato.filas || []);
@@ -397,4 +397,4 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
     );
 }
 
-export default Formato;
+export default FormatoCompartido;

@@ -11,7 +11,11 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
     const [rows, setRows] = useState(contenidoFormato.filas || []);
     const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
     const [firmas, setFirmas] = useState(contenidoFormato.firmas || '');
-    const [isFirmado, setIsFirmado] = useState(firmas.firmaRes || firmas.firmaContra || firmas.firmaSup ? true : false);
+    const [isFirmado, setIsFirmado] = useState({
+        contratista: false,
+        residente: false,
+        supervisor: false,
+    })
     const [titulos, setTitulos] = useState(contenidoFormato.titulos || '')
 
     const addRow = () => {

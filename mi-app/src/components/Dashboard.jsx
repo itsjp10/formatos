@@ -92,7 +92,7 @@ function Dashboard({ logout }) {
                 }
 
                 const compartidosData = await resCompartidos.json()
-                console.log("fetch de compartidos_: ",compartidosData)
+                console.log("fetch de compartidos_: ", compartidosData)
                 setFormatosCompartidos(compartidosData)
 
             } catch (err) {
@@ -106,7 +106,6 @@ function Dashboard({ logout }) {
 
     useEffect(() => {
         if (!selectedIdFormato) return;
-        console.log("isCompartido desde useEffect", isCompartido)
         const lista = isCompartido ? formatosCompartidos : formatos;
         const formatoActualizado = lista.find(f => f.formatoID === selectedIdFormato);
         console.log("se actualizaron los formato y formato compartido")
@@ -355,6 +354,7 @@ function Dashboard({ logout }) {
     const handleSeleccionarFormato = (formatoID, esCompartido = false) => {
         const lista = esCompartido ? formatosCompartidos : formatos;
         setIsCompartido(esCompartido)
+        console.log("iscompartido es: ",isCompartido)
         const formato = lista.find(f => f.formatoID === formatoID)
         if (formato) {
             setFormatoData(JSON.parse(formato.data))
@@ -496,15 +496,27 @@ function Dashboard({ logout }) {
                 )}
                 {pantalla === "Formato" && (
                     <div className="p-4 text-black w-full max-w-5xl">
-                        <Formato
-                            key={selectedIdFormato}
-                            contenidoFormato={formatoData}
-                            onGuardar={handleGuardarFormato}
-                            rol={usuario.role}
-                            firma={firmaSeleccionada}
-                            tipoFormato={tipoFormato}
+                        {!isCompartido && (
+                            <Formato
+                                key={selectedIdFormato}
+                                contenidoFormato={formatoData}
+                                onGuardar={handleGuardarFormato}
+                                rol={usuario.role}
+                                firma={firmaSeleccionada}
+                                tipoFormato={tipoFormato}
+                            />
+                        )}
+                        {isCompartido && (
+                            <FormatoCompartido
+                                key={selectedIdFormato}
+                                contenidoFormato={formatoData}
+                                onGuardar={handleGuardarFormato}
+                                rol={usuario.role}
+                                firma={firmaSeleccionada}
+                                tipoFormato={tipoFormato}
+                            />
+                        )}
 
-                        />
                         {error && <div className="mt-2 text-red-500">{error}</div>}
                     </div>
                 )}
