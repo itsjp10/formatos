@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTitulosChange, hayFilas }) {
+export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTitulosChange, hayFilas, editar }) {
     const [titulos, setTitulos] = useState(contenidoFormato.titulos || {});
     const columnas = contenidoFormato.columnas || [];
 
@@ -87,20 +87,22 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">OBRA:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
+                            readOnly={!editar}
                             name="obra"
                             value={titulos.obra || ''}
                             onChange={handleChange}
-                            className="w-full p-1 outline-none"
+                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
                         />
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">FECHA:</div>
                     <div className="col-span-1">
                         <input
+                            readOnly={!editar}
                             name="fecha"
                             type="date"
                             value={titulos.fecha || ''}
                             onChange={handleChange}
-                            className="w-full p-1 outline-none"
+                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
                         />
                     </div>
                 </div>
@@ -109,19 +111,21 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">TORRE:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
+                            readOnly={!editar}
                             name="torre"
                             value={titulos.torre || ''}
                             onChange={handleChange}
-                            className="w-full p-1 outline-none"
+                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
                         />
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">CONTRATISTA:</div>
                     <div className="col-span-1">
                         <input
+                            readOnly={!editar}
                             name="contratista"
                             value={titulos.contratista || ''}
                             onChange={handleChange}
-                            className="w-full p-1 outline-none"
+                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
                         />
                     </div>
                 </div>
@@ -130,19 +134,21 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">ELABORADO POR:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
+                            readOnly={!editar}
                             name="elaboradoPor"
                             value={titulos.elaboradoPor || ''}
                             onChange={handleChange}
-                            className="w-full p-1 outline-none"
+                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
                         />
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">RESIDENTE DE OBRA:</div>
                     <div className="col-span-1">
                         <input
+                            readOnly={!editar}
                             name="residenteObra"
                             value={titulos.residenteObra || ''}
                             onChange={handleChange}
-                            className="w-full p-1 outline-none"
+                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
                         />
                     </div>
                 </div>

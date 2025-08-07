@@ -117,6 +117,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                     setData(nuevoData);
                     onGuardar(nuevoData);
                 }}
+                editar={true}
             />
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>

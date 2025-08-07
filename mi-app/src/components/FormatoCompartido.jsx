@@ -29,6 +29,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                 contenidoFormato={contenidoFormato}
                 tipoFormato={tipoFormato}
                 hayFilas={false}
+                editar={false}
             />
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
