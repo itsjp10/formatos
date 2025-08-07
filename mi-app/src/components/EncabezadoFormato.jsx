@@ -91,7 +91,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             name="obra"
                             value={titulos.obra || ''}
                             onChange={handleChange}
-                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
+                            className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">FECHA:</div>
@@ -102,7 +102,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             type="date"
                             value={titulos.fecha || ''}
                             onChange={handleChange}
-                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
+                            className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
                 </div>
@@ -115,7 +115,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             name="torre"
                             value={titulos.torre || ''}
                             onChange={handleChange}
-                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
+                            className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">CONTRATISTA:</div>
@@ -125,7 +125,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             name="contratista"
                             value={titulos.contratista || ''}
                             onChange={handleChange}
-                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
+                            className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
                 </div>
@@ -138,7 +138,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             name="elaboradoPor"
                             value={titulos.elaboradoPor || ''}
                             onChange={handleChange}
-                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
+                            className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">RESIDENTE DE OBRA:</div>
@@ -148,7 +148,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             name="residenteObra"
                             value={titulos.residenteObra || ''}
                             onChange={handleChange}
-                            className={`w-full p-1 outline-none ${editar ? 'cursor-context-menu' : 'cursor-default'}`}
+                            className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
                 </div>

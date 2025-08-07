@@ -168,14 +168,14 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                                 return (
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
-                                                        className="border px-2 py-1 text-center relative"
+                                                        className="border text-center h-[40px]"
                                                     >
                                                         {row[fullKey] ? (
                                                             <div className="relative h-10 flex items-center justify-center">
                                                                 <img
                                                                     src={row[fullKey]}
                                                                     alt="Firma"
-                                                                    className="h-full object-contain mx-auto"
+                                                                    className="inset-0 mx-auto my-auto object-contain max-w-[90px] max-h-[36px] pointer-events-none"
                                                                 />
                                                                 {rol === "supervisor" && (
                                                                     <button
