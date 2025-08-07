@@ -239,7 +239,9 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
 
                                             if (isSimpleField(header.label)) return null;
 
-                                            if (isDateField(header.label) || isSignatureField(header.label)) {
+
+
+                                            if (isDateField(header.label)) {
                                                 return (
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
@@ -254,6 +256,48 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                                                     </td>
                                                 );
                                             }
+
+                                            if (isSignatureField(header.label)) {
+                                                return (
+                                                    <td
+                                                        key={`${hIndex}-${kIndex}`}
+                                                        className="border px-2 py-1 text-center"
+                                                    >
+                                                        {row[fullKey] ? (
+                                                            <img
+                                                                src={row[fullKey]}
+                                                                alt="Firma"
+                                                                className="h-6 mx-auto object-contain"
+                                                            />
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
+                                                                onClick={() => {
+                                                                    const updated = [...rows];
+                                                                    updated[rowIndex][fullKey] = firma.imagenUrl;
+
+                                                                    const nuevoData = {
+                                                                        filas: updated,
+                                                                        columnas: headers,
+                                                                        numSubfilas,
+                                                                        titulos,
+                                                                        firmas,
+                                                                    };
+
+                                                                    setRows(updated);
+                                                                    setData(nuevoData);
+                                                                    onGuardar(nuevoData);
+                                                                }}
+                                                            >
+                                                                <Signature className="w-3 h-3" />
+                                                                Firmar
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                );
+                                            }
+
 
                                             return [
                                                 <td
@@ -375,7 +419,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(false);
+                                setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaContra: "",
@@ -444,7 +488,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                     {(isFirmado.residente && rol == "residente") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(false);
+                                setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaRes: "",
@@ -513,7 +557,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(false);
+                                setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaSup: "",

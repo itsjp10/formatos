@@ -148,7 +148,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
 
                                             if (isSimpleField(header.label)) return null;
 
-                                            if (isDateField(header.label) || isSignatureField(header.label)) {
+                                            if (isDateField(header.label)) {
                                                 return (
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
@@ -157,12 +157,79 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                                         <input
                                                             type="text"
                                                             value={row[fullKey] || ''}
-                                                            readOnly
+                                                            onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
                                                             className="w-full border-none outline-none"
                                                         />
                                                     </td>
                                                 );
                                             }
+
+                                            if (isSignatureField(header.label)) {
+                                                return (
+                                                    <td
+                                                        key={`${hIndex}-${kIndex}`}
+                                                        className="border px-2 py-1 text-center relative"
+                                                    >
+                                                        {row[fullKey] ? (
+                                                            <div className="relative h-10 flex items-center justify-center">
+                                                                <img
+                                                                    src={row[fullKey]}
+                                                                    alt="Firma"
+                                                                    className="h-full object-contain mx-auto"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const updated = [...rows];
+                                                                        updated[rowIndex][fullKey] = "";
+
+                                                                        const nuevoData = {
+                                                                            filas: updated,
+                                                                            columnas: headers,
+                                                                            numSubfilas,
+                                                                            titulos,
+                                                                            firmas,
+                                                                        };
+
+                                                                        setRows(updated);
+                                                                        setData(nuevoData);
+                                                                        onGuardar(nuevoData);
+                                                                    }}
+                                                                    className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
+                                                                    title="Eliminar firma"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3 text-gray-700" />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
+                                                                onClick={() => {
+                                                                    const updated = [...rows];
+                                                                    updated[rowIndex][fullKey] = firma.imagenUrl;
+
+                                                                    const nuevoData = {
+                                                                        filas: updated,
+                                                                        columnas: headers,
+                                                                        numSubfilas,
+                                                                        titulos,
+                                                                        firmas,
+                                                                    };
+
+                                                                    setRows(updated);
+                                                                    setData(nuevoData);
+                                                                    onGuardar(nuevoData);
+                                                                }}
+                                                            >
+                                                                <Signature className="w-3 h-3" />
+                                                                Firmar
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                );
+                                            }
+
 
                                             return [
                                                 <td
@@ -236,7 +303,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(false);
+                                setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaContra: "",
@@ -305,7 +372,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                     {(isFirmado.residente && rol == "residente") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(false);
+                                setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaRes: "",
@@ -374,7 +441,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
                             onClick={() => {
-                                setIsFirmado(false);
+                                setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
                                     firmaSup: "",
