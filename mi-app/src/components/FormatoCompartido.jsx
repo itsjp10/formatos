@@ -177,31 +177,33 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                                                     alt="Firma"
                                                                     className="h-full object-contain mx-auto"
                                                                 />
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const updated = [...rows];
-                                                                        updated[rowIndex][fullKey] = "";
+                                                                {rol === "supervisor" && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const updated = [...rows];
+                                                                            updated[rowIndex][fullKey] = "";
 
-                                                                        const nuevoData = {
-                                                                            filas: updated,
-                                                                            columnas: headers,
-                                                                            numSubfilas,
-                                                                            titulos,
-                                                                            firmas,
-                                                                        };
+                                                                            const nuevoData = {
+                                                                                filas: updated,
+                                                                                columnas: headers,
+                                                                                numSubfilas,
+                                                                                titulos,
+                                                                                firmas,
+                                                                            };
 
-                                                                        setRows(updated);
-                                                                        setData(nuevoData);
-                                                                        onGuardar(nuevoData);
-                                                                    }}
-                                                                    className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
-                                                                    title="Eliminar firma"
-                                                                >
-                                                                    <Trash2 className="w-3 h-3 text-gray-700" />
-                                                                </button>
+                                                                            setRows(updated);
+                                                                            setData(nuevoData);
+                                                                            onGuardar(nuevoData);
+                                                                        }}
+                                                                        className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
+                                                                        title="Eliminar firma"
+                                                                    >
+                                                                        <Trash2 className="w-3 h-3 text-gray-700" />
+                                                                    </button>
+                                                                )}
                                                             </div>
-                                                        ) : (
+                                                        ) : rol === "supervisor" ? (
                                                             <button
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
@@ -225,7 +227,7 @@ function FormatoCompartido({ tipoFormato, contenidoFormato, onGuardar, rol, firm
                                                                 <Signature className="w-3 h-3" />
                                                                 Firmar
                                                             </button>
-                                                        )}
+                                                        ) : null}
                                                     </td>
                                                 );
                                             }

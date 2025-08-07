@@ -261,15 +261,42 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                                                 return (
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
-                                                        className="border px-2 py-1 text-center"
+                                                        className="border text-center h-[40px]"
                                                     >
                                                         {row[fullKey] ? (
-                                                            <img
-                                                                src={row[fullKey]}
-                                                                alt="Firma"
-                                                                className="h-6 mx-auto object-contain"
-                                                            />
-                                                        ) : (
+                                                            <div className="relative h-10 flex items-center justify-center">
+                                                                <img
+                                                                    src={row[fullKey]}
+                                                                    alt="Firma"
+                                                                    className="inset-0 mx-auto my-auto object-contain max-w-[90px] max-h-[36px] pointer-events-none"
+                                                                />
+                                                                {rol === "supervisor" && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const updated = [...rows];
+                                                                            updated[rowIndex][fullKey] = "";
+
+                                                                            const nuevoData = {
+                                                                                filas: updated,
+                                                                                columnas: headers,
+                                                                                numSubfilas,
+                                                                                titulos,
+                                                                                firmas,
+                                                                            };
+
+                                                                            setRows(updated);
+                                                                            setData(nuevoData);
+                                                                            onGuardar(nuevoData);
+                                                                        }}
+                                                                        className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
+                                                                        title="Eliminar firma"
+                                                                    >
+                                                                        <Trash2 className="w-3 h-3 text-gray-700" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ) : rol === "supervisor" ? (
                                                             <button
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
@@ -293,7 +320,7 @@ function Formato({ tipoFormato, contenidoFormato, onGuardar, rol, firma, publicL
                                                                 <Signature className="w-3 h-3" />
                                                                 Firmar
                                                             </button>
-                                                        )}
+                                                        ) : null}
                                                     </td>
                                                 );
                                             }
