@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 import { Signature, Trash2, Plus } from "lucide-react"
 import { set } from 'date-fns';
@@ -7,21 +7,29 @@ import EncabezadoFormato from './EncabezadoFormato';
 
 function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, firma, publicLink }) {
     //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar
-    const [data, setData] = useState(contenidoFormato || {});
-    const [headers, setHeaders] = useState(contenidoFormato.columnas || []);
-    const [rows, setRows] = useState(contenidoFormato.filas || []);
-    const [numSubfilas, setNumSubfilas] = useState(contenidoFormato.numSubfilas || 3);
-    const [firmas, setFirmas] = useState(contenidoFormato.firmas || '');
+    const [data, setData] = useState({
+        columnas: [],
+        filas: [],
+        numSubfilas: 3,
+        titulos: '',
+        firmas: {}
+    });
+
+    const [headers, setHeaders] = useState(data.columnas || []);
+    const [rows, setRows] = useState(data.filas || []);
+    const [numSubfilas, setNumSubfilas] = useState(data.numSubfilas || 3);
+    const [firmas, setFirmas] = useState(data.firmas || '');
     const [isFirmado, setIsFirmado] = useState({
         contratista: !!firmas.firmaContra,
         residente: !!firmas.firmaRes,
         supervisor: !!firmas.firmaSup,
     })
 
-    const [titulos, setTitulos] = useState(contenidoFormato.titulos || '')
+    const [titulos, setTitulos] = useState(data.titulos || '')
 
     useEffect(() => {
         const fetchFormato = async () => {
+            console.log("Haciendo fetch de formatoID unico: ", formatoID)
             try {
                 const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
                     method: 'GET',
@@ -34,9 +42,20 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     throw new Error(error || 'Error al obtener el formato')
                 }
 
-                const formatoData = await res.json()
-                setFormato(formatoData)
-
+                const formato = await res.json()
+                const formatoFiltrado = formato.data
+                setData(formatoFiltrado)
+                setHeaders(formatoFiltrado.columnas || [])
+                setRows(formatoFiltrado.filas || [])
+                setNumSubfilas(formatoFiltrado.numSubfilas || 3)
+                setFirmas(formatoFiltrado.firmas || '')
+                setIsFirmado({
+                    contratista: !!formatoFiltrado.firmas.firmaContra,
+                    residente: !!formatoFiltrado.firmas.firmaRes,
+                    supervisor: !!formatoFiltrado.firmas.firmaSup,
+                })
+                setTitulos(formatoFiltrado.titulos || '')
+                console.log("Resultado de formatoFiltrado", formatoFiltrado)
             } catch (err) {
                 console.error(err)
             }
@@ -45,6 +64,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
         if (formatoID) {
             fetchFormato()
         }
+
     }, [formatoID])
 
     const addRow = () => {
@@ -129,29 +149,32 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
     return (
         <div className="w-full overflow-x-auto">
             {/* Encabezado del formato */}
-            <EncabezadoFormato
-                contenidoFormato={contenidoFormato}
-                tipoFormato={tipoFormato}
-                hayFilas={rows.length > 0}
-                onTitulosChange={(titulosActualizados) => {
-                    const nuevoData = {
-                        filas: rows,
-                        columnas: headers,
-                        numSubfilas,
-                        titulos: titulosActualizados,
-                        firmas: firmas,
-                    };
-                    setTitulos(titulosActualizados);
-                    setData(nuevoData);
-                    onGuardar(nuevoData);
-                }}
-                editar={true}
-            />
+            {titulos && (
+                <EncabezadoFormato
+                    contenidoFormato={data}
+                    tipoFormato={tipoFormato}
+                    hayFilas={rows.length > 0}
+                    onTitulosChange={(titulosActualizados) => {
+                        const nuevoData = {
+                            filas: rows,
+                            columnas: headers,
+                            numSubfilas,
+                            titulos: titulosActualizados,
+                            firmas: firmas,
+                        };
+                        setTitulos(titulosActualizados);
+                        setData(nuevoData);
+                        onGuardar(nuevoData);
+                    }}
+                    editar={true}
+                />
+            )}
+
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
                     {/* Fila 1: labels principales */}
                     <tr>
-                        {contenidoFormato.columnas.map((col, colIndex) => {
+                        {data.columnas?.map((col, colIndex) => {
                             if (col.fixed) {
                                 return (
                                     <th
@@ -189,7 +212,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
 
                     {/* Fila 2: subheaders (solo si los hay) */}
                     <tr>
-                        {contenidoFormato.columnas.map((col, colIndex) => {
+                        {data.columnas?.map((col, colIndex) => {
                             if (col.fixed) return null;
 
                             if (col.subheaders && col.subheaders.length > 0) {
@@ -210,7 +233,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
 
                     {/* Fila 3: C / NC headers */}
                     <tr>
-                        {contenidoFormato.columnas.map((col, colIndex) => {
+                        {data.columnas?.map((col, colIndex) => {
                             if (col.fixed) return null;
 
                             if (col.subheaders && col.subheaders.length > 0) {
@@ -236,7 +259,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
 
 
                 <tbody>
-                    {rows.map((row, rowIndex) =>
+                    {rows?.map((row, rowIndex) =>
                         [...Array(numSubfilas)].map((_, subIndex) => {
                             return (
                                 <tr key={`${rowIndex}-${subIndex}`}>

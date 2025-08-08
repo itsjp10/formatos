@@ -509,6 +509,7 @@ function Dashboard({ logout }) {
                         )}
                         {isCompartido && (
                             <FormatoCompartido
+                                formatoID={selectedIdFormato}
                                 key={selectedIdFormato}
                                 contenidoFormato={formatoData}
                                 onGuardar={handleGuardarFormato}

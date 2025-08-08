@@ -12,9 +12,7 @@ export async function GET(req) {
 
     try {
         const formato = await prisma.formato.findUnique({
-            where: {
-                formatoID, // busca por ID único
-            }
+            where: { formatoID }
         })
 
         if (!formato) {
@@ -23,8 +21,22 @@ export async function GET(req) {
             })
         }
 
-        return new Response(JSON.stringify(formato), {
+        // Parsear data si es string
+        let parsedData = formato.data
+        if (typeof parsedData === 'string') {
+            try {
+                parsedData = JSON.parse(parsedData)
+            } catch (e) {
+                console.error('Error parseando formato.data:', e)
+            }
+        }
+
+        return new Response(JSON.stringify({
+            ...formato,
+            data: parsedData
+        }), {
             status: 200,
+            headers: { 'Content-Type': 'application/json' }
         })
     } catch (err) {
         console.error('Error al obtener formato:', err)
