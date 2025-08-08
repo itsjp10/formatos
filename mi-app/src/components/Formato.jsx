@@ -69,8 +69,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
     
     
 
-    const addRow = () => {
-        fetchFormato()
+    const addRow = async () => {
+        await fetchFormato()
         const newRow = {};
         headers.forEach((header) => {
             const subkeys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
@@ -96,8 +96,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
         onGuardar(nuevoData);
     };
 
-    const deleteRow = (index) => {
-        fetchFormato()
+    const deleteRow = async (index) => {
+        await fetchFormato()
         const updatedRows = rows.filter((_, i) => i !== index);
         setRows(updatedRows);
 
@@ -112,8 +112,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
         onGuardar(nuevoData);
     };
 
-    const updateCell = (rowIndex, key, value) => {
-        fetchFormato()
+    const updateCell = async (rowIndex, key, value) => {
+        await fetchFormato()
         const updated = [...rows];
         updated[rowIndex][key] = value;
         setRows(updated);
@@ -130,8 +130,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
     };
 
 
-    const toggleCheckbox = (rowIndex, key, value) => {
-        fetchFormato()
+    const toggleCheckbox = async (rowIndex, key, value) => {
+        await fetchFormato()
         const updated = [...rows];
         updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
         setRows(updated);
@@ -160,8 +160,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     contenidoFormato={data}
                     tipoFormato={tipoFormato}
                     hayFilas={rows.length > 0}
-                    onTitulosChange={(titulosActualizados) => {
-                        fetchFormato()
+                    onTitulosChange={async (titulosActualizados) => {
+                        await fetchFormato()
                         const nuevoData = {
                             filas: rows,
                             columnas: headers,
@@ -331,8 +331,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                                 {rol === "supervisor" && (
                                                                     <button
                                                                         type="button"
-                                                                        onClick={() => {
-                                                                            fetchFormato()
+                                                                        onClick={async () => {
+                                                                            await fetchFormato()
                                                                             const updated = [...rows];
                                                                             updated[rowIndex][fullKey] = "";
 
@@ -359,8 +359,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                             <button
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
-                                                                onClick={() => {
-                                                                    fetchFormato()
+                                                                onClick={async () => {
+                                                                    await fetchFormato()
                                                                     const updated = [...rows];
                                                                     updated[rowIndex][fullKey] = firma.imagenUrl;
 
@@ -475,8 +475,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={() => {
-                                        fetchFormato()
+                                    onClick={async () => {
+                                        await fetchFormato()
                                         setIsFirmado(prev => ({ ...prev, contratista: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -506,8 +506,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     <span className="text-sm font-semibold text-center">CONTRATISTA</span>
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
-                            onClick={() => {
-                                fetchFormato()
+                            onClick={async () => {
+                                await fetchFormato()
                                 setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -546,8 +546,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={() => {
-                                        fetchFormato()
+                                    onClick={async () => {
+                                        await fetchFormato()
                                         setIsFirmado(prev => ({ ...prev, residente: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -577,8 +577,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
                     {(isFirmado.residente && rol == "residente") && (
                         <button
-                            onClick={() => {
-                                fetchFormato()
+                            onClick={async () => {
+                                await fetchFormato()
                                 setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -617,8 +617,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={() => {
-                                        fetchFormato()
+                                    onClick={async () => {
+                                        await fetchFormato()
                                         setIsFirmado(prev => ({ ...prev, supervisor: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -648,8 +648,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
-                            onClick={() => {
-                                fetchFormato()
+                            onClick={async() => {
+                                await fetchFormato()
                                 setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
