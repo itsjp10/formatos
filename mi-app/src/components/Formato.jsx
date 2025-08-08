@@ -27,47 +27,72 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
 
     const [titulos, setTitulos] = useState(data.titulos || '')
 
-    useEffect(() => {
-        const fetchFormato = async () => {
-            console.log("Haciendo fetch de formatoID unico: ", formatoID)
-            try {
-                const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                })
+    const fetchFormato = async () => {
+        console.log("Haciendo fetch de formatoID unico: ", formatoID)
+        try {
+            const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            })
 
-                if (!res.ok) {
-                    const { error } = await res.json()
-                    throw new Error(error || 'Error al obtener el formato')
-                }
-
-                const formato = await res.json()
-                const formatoFiltrado = formato.data
-                setData(formatoFiltrado)
-                setHeaders(formatoFiltrado.columnas || [])
-                setRows(formatoFiltrado.filas || [])
-                setNumSubfilas(formatoFiltrado.numSubfilas || 3)
-                setFirmas(formatoFiltrado.firmas || '')
-                setIsFirmado({
-                    contratista: !!formatoFiltrado.firmas.firmaContra,
-                    residente: !!formatoFiltrado.firmas.firmaRes,
-                    supervisor: !!formatoFiltrado.firmas.firmaSup,
-                })
-                setTitulos(formatoFiltrado.titulos || '')
-                console.log("Resultado de formatoFiltrado", formatoFiltrado)
-            } catch (err) {
-                console.error(err)
+            if (!res.ok) {
+                const { error } = await res.json()
+                throw new Error(error || 'Error al obtener el formato')
             }
-        }
 
+            const formato = await res.json()
+            const formatoFiltrado = formato.data
+            setData(formatoFiltrado)
+            setHeaders(formatoFiltrado.columnas || [])
+            setRows(formatoFiltrado.filas || [])
+            setNumSubfilas(formatoFiltrado.numSubfilas || 3)
+            setFirmas(formatoFiltrado.firmas || '')
+            setIsFirmado({
+                contratista: !!formatoFiltrado.firmas.firmaContra,
+                residente: !!formatoFiltrado.firmas.firmaRes,
+                supervisor: !!formatoFiltrado.firmas.firmaSup,
+            })
+            setTitulos(formatoFiltrado.titulos || '')
+            console.log("Resultado de formatoFiltrado", formatoFiltrado)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    useEffect(() => {
         if (formatoID) {
             fetchFormato()
         }
 
     }, [formatoID])
 
+    const compararFormato = async () => {
+        const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+        });
+        const formato = await res.json();
+        const formatoFiltrado = formato.data;
+
+        const localDataString = JSON.stringify(data);
+        const remoteDataString = JSON.stringify(formatoFiltrado);
+
+        if (localDataString !== remoteDataString) {
+            console.warn("Formato modificado por otro usuario");
+            setData(formatoFiltrado);
+            setHeaders(formatoFiltrado.columnas || []);
+            setRows(formatoFiltrado.filas || []);
+            setNumSubfilas(formatoFiltrado.numSubfilas || 3);
+            setFirmas(formatoFiltrado.firmas || {});
+            setTitulos(formatoFiltrado.titulos || '');
+        }
+    }
+
+
     const addRow = () => {
+        compararFormato()
         const newRow = {};
         headers.forEach((header) => {
             const subkeys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
@@ -94,6 +119,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
     };
 
     const deleteRow = (index) => {
+        compararFormato()
         const updatedRows = rows.filter((_, i) => i !== index);
         setRows(updatedRows);
 
@@ -109,6 +135,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
     };
 
     const updateCell = (rowIndex, key, value) => {
+        compararFormato()
         const updated = [...rows];
         updated[rowIndex][key] = value;
         setRows(updated);
@@ -126,6 +153,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
 
 
     const toggleCheckbox = (rowIndex, key, value) => {
+        compararFormato()
         const updated = [...rows];
         updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
         setRows(updated);
@@ -155,6 +183,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     tipoFormato={tipoFormato}
                     hayFilas={rows.length > 0}
                     onTitulosChange={(titulosActualizados) => {
+                        compararFormato()
                         const nuevoData = {
                             filas: rows,
                             columnas: headers,
@@ -325,6 +354,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => {
+                                                                            compararFormato()
                                                                             const updated = [...rows];
                                                                             updated[rowIndex][fullKey] = "";
 
@@ -352,6 +382,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
                                                                 onClick={() => {
+                                                                    compararFormato()
                                                                     const updated = [...rows];
                                                                     updated[rowIndex][fullKey] = firma.imagenUrl;
 
@@ -467,6 +498,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
                                     onClick={() => {
+                                        compararFormato()
                                         setIsFirmado(prev => ({ ...prev, contratista: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -497,6 +529,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
                             onClick={() => {
+                                compararFormato()
                                 setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -536,6 +569,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
                                     onClick={() => {
+                                        compararFormato()
                                         setIsFirmado(prev => ({ ...prev, residente: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -566,6 +600,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     {(isFirmado.residente && rol == "residente") && (
                         <button
                             onClick={() => {
+                                compararFormato()
                                 setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -605,6 +640,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
                                     onClick={() => {
+                                        compararFormato()
                                         setIsFirmado(prev => ({ ...prev, supervisor: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -635,6 +671,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
                             onClick={() => {
+                                compararFormato()
                                 setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
