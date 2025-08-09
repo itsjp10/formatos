@@ -4,13 +4,13 @@ import { Signature, Trash2, Plus } from "lucide-react"
 import EncabezadoFormato from './EncabezadoFormato';
 
 
-function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, firma }) {
+function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
     //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar
     const [data, setData] = useState({
         columnas: [],
         filas: [],
         numSubfilas: 3,
-        titulos: '',
+        titulos: '', 
         firmas: {}
     });
 
@@ -26,40 +26,41 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
 
     const [titulos, setTitulos] = useState(data.titulos || '')
 
-    useEffect(() => {
-        const fetchFormato = async () => {
-            console.log("Haciendo fetch de formatoID unico: ", formatoID)
-            try {
-                const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                })
+    const fetchFormato = async () => {
+        console.log("Haciendo fetch de formatoID unico: ", formatoID)
+        try {
+            const res = await fetch(`/api/formato?formatoID=${formatoID}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            })
 
-                if (!res.ok) {
-                    const { error } = await res.json()
-                    throw new Error(error || 'Error al obtener el formato')
-                }
-
-                const formato = await res.json()
-                const formatoFiltrado = formato.data
-                setData(formatoFiltrado)
-                setHeaders(formatoFiltrado.columnas || [])
-                setRows(formatoFiltrado.filas || [])
-                setNumSubfilas(formatoFiltrado.numSubfilas || 3)
-                setFirmas(formatoFiltrado.firmas || '')
-                setIsFirmado({
-                    contratista: !!formatoFiltrado.firmas.firmaContra,
-                    residente: !!formatoFiltrado.firmas.firmaRes,
-                    supervisor: !!formatoFiltrado.firmas.firmaSup,
-                })
-                setTitulos(formatoFiltrado.titulos || '')
-                console.log("Resultado de formatoFiltrado", formatoFiltrado)
-            } catch (err) {
-                console.error(err)
+            if (!res.ok) {
+                const { error } = await res.json()
+                throw new Error(error || 'Error al obtener el formato')
             }
-        }
 
+            const formato = await res.json()
+            const formatoFiltrado = formato.data
+            setData(formatoFiltrado)
+            setHeaders(formatoFiltrado.columnas || [])
+            setRows(formatoFiltrado.filas || [])
+            setNumSubfilas(formatoFiltrado.numSubfilas || 3)
+            setFirmas(formatoFiltrado.firmas || '')
+            setIsFirmado({
+                contratista: !!formatoFiltrado.firmas.firmaContra,
+                residente: !!formatoFiltrado.firmas.firmaRes,
+                supervisor: !!formatoFiltrado.firmas.firmaSup,
+            })
+            setTitulos(formatoFiltrado.titulos || '')
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            console.log("Resultado de formatoFiltrado", formatoFiltrado)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    useEffect(() => {
         if (formatoID) {
             fetchFormato()
         }
@@ -75,7 +76,7 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
             {/* Encabezado del formato */}
             {titulos && (
                 <EncabezadoFormato
-                    contenidoFormato={contenidoFormato}
+                    contenidoFormato={data}
                     tipoFormato={tipoFormato}
                     hayFilas={false}
                     editar={false}
@@ -231,7 +232,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                                                                 {rol === "supervisor" && (
                                                                     <button
                                                                         type="button"
-                                                                        onClick={() => {
+                                                                        onClick={async () => {
+                                                                            await fetchFormato()
                                                                             const updated = [...rows];
                                                                             updated[rowIndex][fullKey] = "";
 
@@ -258,7 +260,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                                                             <button
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
-                                                                onClick={() => {
+                                                                onClick={async () => {
+                                                                    await fetchFormato()
                                                                     const updated = [...rows];
                                                                     updated[rowIndex][fullKey] = firma.imagenUrl;
 
@@ -308,7 +311,6 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
 
 
             </table>
-
             <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
                 {/* CONTRATISTA */}
 
@@ -325,7 +327,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        await fetchFormato()
                                         setIsFirmado(prev => ({ ...prev, contratista: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -355,7 +358,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                     <span className="text-sm font-semibold text-center">CONTRATISTA</span>
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
-                            onClick={() => {
+                            onClick={async () => {
+                                await fetchFormato()
                                 setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -394,7 +398,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        await fetchFormato()
                                         setIsFirmado(prev => ({ ...prev, residente: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -424,7 +429,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                     <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
                     {(isFirmado.residente && rol == "residente") && (
                         <button
-                            onClick={() => {
+                            onClick={async () => {
+                                await fetchFormato()
                                 setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -463,7 +469,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={() => {
+                                    onClick={async () => {
+                                        await fetchFormato()
                                         setIsFirmado(prev => ({ ...prev, supervisor: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -493,7 +500,8 @@ function FormatoCompartido({ formatoID, tipoFormato, contenidoFormato, onGuardar
                     <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
-                            onClick={() => {
+                            onClick={async () => {
+                                await fetchFormato()
                                 setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
