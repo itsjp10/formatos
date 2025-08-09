@@ -11,6 +11,8 @@
     "nanoid": "^5.1.5",
     "next-auth": "^4.24.11",
     "next-cloudinary": "^6.16.0",
-    "react-datepicker": "^8.4.0"
+    "react-datepicker": "^8.4.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   }
 }

@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { io } from "socket.io-client";
 import React from 'react';
 import { Signature, Trash2, Plus } from "lucide-react"
-import { set } from 'date-fns';
 import EncabezadoFormato from './EncabezadoFormato';
 
+const socket = io("http://localhost:3001");
 
-function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, firma, publicLink }) {
+function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) {
     //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar
     const [data, setData] = useState({
         columnas: [],
@@ -14,6 +15,58 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
         titulos: '',
         firmas: {}
     });
+
+    // referencia para evitar bucles infinitos
+    const isRemoteUpdate = useRef(false);
+
+    useEffect(() => {
+        socket.emit("join-formato", formatoID);
+
+        socket.on("formato-actualizado", (newData) => {
+            isRemoteUpdate.current = true;
+            setData(newData);
+            setHeaders(newData.columnas || []);
+            setRows(newData.filas || []);
+            setNumSubfilas(newData.numSubfilas || 3);
+            setFirmas(newData.firmas || {});
+            setTitulos(newData.titulos || '');
+            setIsFirmado({
+                contratista: !!(newData.firmas && newData.firmas.firmaContra),
+                residente: !!(newData.firmas && newData.firmas.firmaRes),
+                supervisor: !!(newData.firmas && newData.firmas.firmaSup),
+            });
+            requestAnimationFrame(() => {
+                isRemoteUpdate.current = false;
+            });
+        });
+
+        return () => {
+            socket.off("formato-actualizado");
+        };
+    }, [formatoID]);
+
+    const syncAndSave = (newData) => {
+        setData(newData);
+        setHeaders(newData.columnas || []);
+        setRows(newData.filas || []);
+        setNumSubfilas(newData.numSubfilas || 3);
+        setFirmas(newData.firmas || {});
+        setTitulos(newData.titulos || '');
+        setIsFirmado({
+            contratista: !!(newData.firmas && newData.firmas.firmaContra),
+            residente: !!(newData.firmas && newData.firmas.firmaRes),
+            supervisor: !!(newData.firmas && newData.firmas.firmaSup),
+        });
+        requestAnimationFrame(() => {
+            isRemoteUpdate.current = false;
+        });
+        onGuardar(newData);
+
+        if (!isRemoteUpdate.current) {
+            socket.emit("update-formato", { formatoID, data: newData });
+        }
+        isRemoteUpdate.current = false;
+    };
 
     const [headers, setHeaders] = useState(data.columnas || []);
     const [rows, setRows] = useState(data.filas || []);
@@ -54,6 +107,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                 supervisor: !!formatoFiltrado.firmas.firmaSup,
             })
             setTitulos(formatoFiltrado.titulos || '')
+            await new Promise(resolve => requestAnimationFrame(resolve));
             console.log("Resultado de formatoFiltrado", formatoFiltrado)
         } catch (err) {
             console.error(err)
@@ -66,11 +120,10 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
         }
 
     }, [formatoID])
-    
-    
 
-    const addRow = async () => {
-        await fetchFormato()
+
+
+    const addRow = () => {
         const newRow = {};
         headers.forEach((header) => {
             const subkeys = header.subheaders?.length > 0 ? header.subheaders : [header.label];
@@ -92,12 +145,10 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
             titulos: titulos,
             firmas: firmas,
         };
-        setData(nuevoData);
-        onGuardar(nuevoData);
+        syncAndSave(nuevoData);
     };
 
-    const deleteRow = async (index) => {
-        await fetchFormato()
+    const deleteRow = (index) => {
         const updatedRows = rows.filter((_, i) => i !== index);
         setRows(updatedRows);
 
@@ -108,12 +159,10 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
             titulos: titulos,
             firmas: firmas,
         };
-        setData(nuevoData);
-        onGuardar(nuevoData);
+        syncAndSave(nuevoData);
     };
 
-    const updateCell = async (rowIndex, key, value) => {
-        await fetchFormato()
+    const updateCell = (rowIndex, key, value) => {
         const updated = [...rows];
         updated[rowIndex][key] = value;
         setRows(updated);
@@ -125,13 +174,11 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
             titulos: titulos,
             firmas: firmas,
         };
-        setData(nuevoData);
-        onGuardar(nuevoData);
+        syncAndSave(nuevoData);
     };
 
 
-    const toggleCheckbox = async (rowIndex, key, value) => {
-        await fetchFormato()
+    const toggleCheckbox = (rowIndex, key, value) => {
         const updated = [...rows];
         updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
         setRows(updated);
@@ -143,8 +190,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
             titulos: titulos,
             firmas: firmas,
         };
-        setData(nuevoData);
-        onGuardar(nuevoData);
+        syncAndSave(nuevoData);
     };
 
 
@@ -160,8 +206,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     contenidoFormato={data}
                     tipoFormato={tipoFormato}
                     hayFilas={rows.length > 0}
-                    onTitulosChange={async (titulosActualizados) => {
-                        await fetchFormato()
+                    onTitulosChange={(titulosActualizados) => {
                         const nuevoData = {
                             filas: rows,
                             columnas: headers,
@@ -169,9 +214,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                             titulos: titulosActualizados,
                             firmas: firmas,
                         };
-                        setTitulos(titulosActualizados);
-                        setData(nuevoData);
-                        onGuardar(nuevoData);
+                        syncAndSave(nuevoData);
                     }}
                     editar={true}
                 />
@@ -331,8 +374,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                                 {rol === "supervisor" && (
                                                                     <button
                                                                         type="button"
-                                                                        onClick={async () => {
-                                                                            await fetchFormato()
+                                                                        onClick={() => {
                                                                             const updated = [...rows];
                                                                             updated[rowIndex][fullKey] = "";
 
@@ -343,10 +385,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                                                 titulos,
                                                                                 firmas,
                                                                             };
-
-                                                                            setRows(updated);
-                                                                            setData(nuevoData);
-                                                                            onGuardar(nuevoData);
+                                                                            syncAndSave(nuevoData);
                                                                         }}
                                                                         className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
                                                                         title="Eliminar firma"
@@ -359,8 +398,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                             <button
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
-                                                                onClick={async () => {
-                                                                    await fetchFormato()
+                                                                onClick={() => {
                                                                     const updated = [...rows];
                                                                     updated[rowIndex][fullKey] = firma.imagenUrl;
 
@@ -371,10 +409,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                                                         titulos,
                                                                         firmas,
                                                                     };
-
-                                                                    setRows(updated);
-                                                                    setData(nuevoData);
-                                                                    onGuardar(nuevoData);
+                                                                    syncAndSave(nuevoData);
                                                                 }}
                                                             >
                                                                 <Signature className="w-3 h-3" />
@@ -475,8 +510,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={async () => {
-                                        await fetchFormato()
+                                    onClick={() => {
                                         setIsFirmado(prev => ({ ...prev, contratista: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -491,8 +525,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                             titulos,
                                             firmas: nuevasFirmas,
                                         };
-                                        setData(nuevoData);
-                                        onGuardar(nuevoData);
+                                        syncAndSave(nuevoData);
                                     }}
                                 >
                                     <Signature className="w-4 h-4" />
@@ -506,8 +539,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     <span className="text-sm font-semibold text-center">CONTRATISTA</span>
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
-                            onClick={async () => {
-                                await fetchFormato()
+                            onClick={() => {
                                 setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -522,8 +554,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                     titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
-                                setData(nuevoData);
-                                onGuardar(nuevoData);
+                                syncAndSave(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
@@ -546,8 +577,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={async () => {
-                                        await fetchFormato()
+                                    onClick={() => {
                                         setIsFirmado(prev => ({ ...prev, residente: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -562,8 +592,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                             titulos,
                                             firmas: nuevasFirmas,
                                         };
-                                        setData(nuevoData);
-                                        onGuardar(nuevoData);
+                                        syncAndSave(nuevoData);
                                     }}
                                 >
                                     <Signature className="w-4 h-4" />
@@ -577,8 +606,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
                     {(isFirmado.residente && rol == "residente") && (
                         <button
-                            onClick={async () => {
-                                await fetchFormato()
+                            onClick={() => {
                                 setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -593,8 +621,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                     titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
-                                setData(nuevoData);
-                                onGuardar(nuevoData);
+                                syncAndSave(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
@@ -617,8 +644,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={async () => {
-                                        await fetchFormato()
+                                    onClick={() => {
                                         setIsFirmado(prev => ({ ...prev, supervisor: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -633,8 +659,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                             titulos,
                                             firmas: nuevasFirmas,
                                         };
-                                        setData(nuevoData);
-                                        onGuardar(nuevoData);
+                                        syncAndSave(nuevoData);
                                     }}
                                 >
                                     <Signature className="w-4 h-4" />
@@ -648,8 +673,8 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                     <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
-                            onClick={async() => {
-                                await fetchFormato()
+                            onClick={() => {
+
                                 setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -664,8 +689,7 @@ function Formato({ formatoID, tipoFormato, contenidoFormato, onGuardar, rol, fir
                                     titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
-                                setData(nuevoData);
-                                onGuardar(nuevoData);
+                                syncAndSave(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >

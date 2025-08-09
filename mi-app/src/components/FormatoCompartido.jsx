@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { io } from "socket.io-client";
 import React from 'react';
 import { Signature, Trash2, Plus } from "lucide-react"
 import EncabezadoFormato from './EncabezadoFormato';
+
+const socket = io("http://localhost:3001");
 
 
 function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
@@ -10,9 +13,61 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
         columnas: [],
         filas: [],
         numSubfilas: 3,
-        titulos: '', 
+        titulos: '',
         firmas: {}
     });
+
+    // referencia para evitar bucles infinitos
+    const isRemoteUpdate = useRef(false);
+
+    useEffect(() => {
+        socket.emit("join-formato", formatoID);
+
+        socket.on("formato-actualizado", (newData) => {
+            isRemoteUpdate.current = true;
+            setData(newData);
+            setHeaders(newData.columnas || []);
+            setRows(newData.filas || []);
+            setNumSubfilas(newData.numSubfilas || 3);
+            setFirmas(newData.firmas || {});
+            setTitulos(newData.titulos || '');
+            setIsFirmado({
+                contratista: !!(newData.firmas && newData.firmas.firmaContra),
+                residente: !!(newData.firmas && newData.firmas.firmaRes),
+                supervisor: !!(newData.firmas && newData.firmas.firmaSup),
+            });
+            requestAnimationFrame(() => {
+                isRemoteUpdate.current = false;
+            });
+        });
+
+        return () => {
+            socket.off("formato-actualizado");
+        };
+    }, [formatoID]);
+
+    const syncAndSave = (newData) => {
+        setData(newData);
+        setHeaders(newData.columnas || []);
+        setRows(newData.filas || []);
+        setNumSubfilas(newData.numSubfilas || 3);
+        setFirmas(newData.firmas || {});
+        setTitulos(newData.titulos || '');
+        setIsFirmado({
+            contratista: !!(newData.firmas && newData.firmas.firmaContra),
+            residente: !!(newData.firmas && newData.firmas.firmaRes),
+            supervisor: !!(newData.firmas && newData.firmas.firmaSup),
+        });
+        requestAnimationFrame(() => {
+            isRemoteUpdate.current = false;
+        });
+        onGuardar(newData);
+
+        if (!isRemoteUpdate.current) {
+            socket.emit("update-formato", { formatoID, data: newData });
+        }
+        isRemoteUpdate.current = false;
+    };
 
     const [headers, setHeaders] = useState(data.columnas || []);
     const [rows, setRows] = useState(data.filas || []);
@@ -209,7 +264,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                         <input
                                                             type="text"
                                                             value={row[fullKey] || ''}
-                                                            onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
+                                                            readOnly
                                                             className="w-full border-none outline-none"
                                                         />
                                                     </td>
@@ -232,8 +287,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                                 {rol === "supervisor" && (
                                                                     <button
                                                                         type="button"
-                                                                        onClick={async () => {
-                                                                            await fetchFormato()
+                                                                        onClick={() => {
                                                                             const updated = [...rows];
                                                                             updated[rowIndex][fullKey] = "";
 
@@ -245,9 +299,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                                                 firmas,
                                                                             };
 
-                                                                            setRows(updated);
-                                                                            setData(nuevoData);
-                                                                            onGuardar(nuevoData);
+                                                                            syncAndSave(nuevoData);
                                                                         }}
                                                                         className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
                                                                         title="Eliminar firma"
@@ -260,8 +312,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                             <button
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
-                                                                onClick={async () => {
-                                                                    await fetchFormato()
+                                                                onClick={() => {
                                                                     const updated = [...rows];
                                                                     updated[rowIndex][fullKey] = firma.imagenUrl;
 
@@ -273,9 +324,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                                         firmas,
                                                                     };
 
-                                                                    setRows(updated);
-                                                                    setData(nuevoData);
-                                                                    onGuardar(nuevoData);
+                                                                    syncAndSave(nuevoData);
                                                                 }}
                                                             >
                                                                 <Signature className="w-3 h-3" />
@@ -327,8 +376,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={async () => {
-                                        await fetchFormato()
+                                    onClick={() => {
                                         setIsFirmado(prev => ({ ...prev, contratista: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -343,8 +391,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                             titulos,
                                             firmas: nuevasFirmas,
                                         };
-                                        setData(nuevoData);
-                                        onGuardar(nuevoData);
+                                        syncAndSave(nuevoData);
                                     }}
                                 >
                                     <Signature className="w-4 h-4" />
@@ -358,8 +405,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                     <span className="text-sm font-semibold text-center">CONTRATISTA</span>
                     {(isFirmado.contratista && rol == "contratista") && (
                         <button
-                            onClick={async () => {
-                                await fetchFormato()
+                            onClick={() => {
                                 setIsFirmado(prev => ({ ...prev, contratista: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -374,8 +420,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                     titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
-                                setData(nuevoData);
-                                onGuardar(nuevoData);
+                                syncAndSave(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
@@ -398,8 +443,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={async () => {
-                                        await fetchFormato()
+                                    onClick={() => {
                                         setIsFirmado(prev => ({ ...prev, residente: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -414,8 +458,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                             titulos,
                                             firmas: nuevasFirmas,
                                         };
-                                        setData(nuevoData);
-                                        onGuardar(nuevoData);
+                                        syncAndSave(nuevoData);
                                     }}
                                 >
                                     <Signature className="w-4 h-4" />
@@ -429,8 +472,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                     <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
                     {(isFirmado.residente && rol == "residente") && (
                         <button
-                            onClick={async () => {
-                                await fetchFormato()
+                            onClick={() => {
                                 setIsFirmado(prev => ({ ...prev, residente: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -445,8 +487,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                     titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
-                                setData(nuevoData);
-                                onGuardar(nuevoData);
+                                syncAndSave(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
@@ -469,8 +510,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                 <button
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
-                                    onClick={async () => {
-                                        await fetchFormato()
+                                    onClick={() => {
                                         setIsFirmado(prev => ({ ...prev, supervisor: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -485,8 +525,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                             titulos,
                                             firmas: nuevasFirmas,
                                         };
-                                        setData(nuevoData);
-                                        onGuardar(nuevoData);
+                                        syncAndSave(nuevoData);
                                     }}
                                 >
                                     <Signature className="w-4 h-4" />
@@ -500,8 +539,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                     <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
                     {(isFirmado.supervisor && rol == "supervisor") && (
                         <button
-                            onClick={async () => {
-                                await fetchFormato()
+                            onClick={() => {
                                 setIsFirmado(prev => ({ ...prev, supervisor: false }));
                                 const nuevasFirmas = {
                                     ...firmas,
@@ -516,8 +554,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                     titulos: titulos,
                                     firmas: nuevasFirmas,
                                 };
-                                setData(nuevoData);
-                                onGuardar(nuevoData);
+                                syncAndSave(nuevoData);
                             }}
                             className="mb-2 mt-2 p-1 bg-gray-200 hover:bg-gray-300 rounded"
                         >
