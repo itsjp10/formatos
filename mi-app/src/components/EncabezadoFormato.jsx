@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTitulosChange, hayFilas, editar }) {
     const [titulos, setTitulos] = useState(contenidoFormato.titulos || {});
     const columnas = contenidoFormato.columnas || [];
+
+    useEffect(() => {
+        setTitulos(contenidoFormato.titulos || {});
+    }, [contenidoFormato.titulos]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
