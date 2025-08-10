@@ -354,7 +354,7 @@ function Dashboard({ logout }) {
     const handleSeleccionarFormato = (formatoID, esCompartido = false) => {
         const lista = esCompartido ? formatosCompartidos : formatos;
         setIsCompartido(esCompartido)
-        console.log("iscompartido es: ",isCompartido)
+        console.log("iscompartido es: ", isCompartido)
         const formato = lista.find(f => f.formatoID === formatoID)
         if (formato) {
             setFormatoData(JSON.parse(formato.data))
@@ -421,62 +421,65 @@ function Dashboard({ logout }) {
                 onConfirm={handleDeleteFormato}
                 onCancel={() => setShowConfirmDelete(false)}
             />
-            <Sidebar nombre={usuario.name} rol={usuario.role} logout={logout}>
-                <SidebarItem
-                    icon={<Plus size={20} />}
-                    text="Nuevo formato"
-                    active={activeSidebarItem === "Nuevo formato"}
-                    onClick={() => { setPantalla(""); setActiveSidebarItem("Nuevo formato"); }}
-                />
-                <SidebarItem
-                    icon={<Signature size={20} />}
-                    text="Mis firmas"
-                    active={activeSidebarItem === "Mis firmas"}
-                    onClick={() => { setPantalla("Mis firmas"); setActiveSidebarItem("Mis firmas") }}
-                />
-                {usuario.role === 'residente' && (<SidebarItem
-                    icon={<LayoutTemplate size={20} />}
-                    text="Crear plantilla"
-                    active={activeSidebarItem === "Crear plantilla"}
-                    onClick={() => { setPantalla("Crear plantilla"); setActiveSidebarItem("Crear plantilla"); }}
-                />)
+            <div className="min-h-screen flex-shrink-0 h-screen sticky top-0">
+                <Sidebar nombre={usuario.name} rol={usuario.role} logout={logout}>
+                    <SidebarItem
+                        icon={<Plus size={20} />}
+                        text="Nuevo formato"
+                        active={activeSidebarItem === "Nuevo formato"}
+                        onClick={() => { setPantalla(""); setActiveSidebarItem("Nuevo formato"); }}
+                    />
+                    <SidebarItem
+                        icon={<Signature size={20} />}
+                        text="Mis firmas"
+                        active={activeSidebarItem === "Mis firmas"}
+                        onClick={() => { setPantalla("Mis firmas"); setActiveSidebarItem("Mis firmas") }}
+                    />
+                    {usuario.role === 'residente' && (<SidebarItem
+                        icon={<LayoutTemplate size={20} />}
+                        text="Crear plantilla"
+                        active={activeSidebarItem === "Crear plantilla"}
+                        onClick={() => { setPantalla("Crear plantilla"); setActiveSidebarItem("Crear plantilla"); }}
+                    />)
 
-                }
-                <hr className="my-3" />
-                <SidebarItem
-                    text="Formatos"
-                    active={activeSidebarItem === "Formatos"}
-                    onClick={() => setActiveSidebarItem("Formatos")}
-                />
-                {(formatos || []).map((formato) => (
+                    }
+                    <hr className="my-3" />
                     <SidebarItem
-                        key={formato.formatoID}
-                        text={formato.name}
-                        tipo="formatoItem"
-                        active={activeSidebarItem === formato.formatoID}
-                        onClick={() => handleSeleccionarFormato(formato.formatoID)}
-                        formatoID={formato.formatoID}
-                        onRenombrar={handleRenombrar}
+                        text="Formatos"
+                        active={activeSidebarItem === "Formatos"}
+                        onClick={() => setActiveSidebarItem("Formatos")}
                     />
-                ))}
-                <SidebarItem
-                    text="Formatos compartidos conmigo"
-                    active={activeSidebarItem === "Formatos"}
-                    onClick={() => setActiveSidebarItem("Formatos")}
-                />
-                {(formatosCompartidos || []).map((compartido) => (
+                    {(formatos || []).map((formato) => (
+                        <SidebarItem
+                            key={formato.formatoID}
+                            text={formato.name}
+                            tipo="formatoItem"
+                            active={activeSidebarItem === formato.formatoID}
+                            onClick={() => handleSeleccionarFormato(formato.formatoID)}
+                            formatoID={formato.formatoID}
+                            onRenombrar={handleRenombrar}
+                        />
+                    ))}
                     <SidebarItem
-                        key={compartido.formatoID}
-                        text={compartido.name}
-                        tipo="formatoItem"
-                        active={activeSidebarItem === compartido.formatoID}
-                        onClick={() => {
-                            handleSeleccionarFormato(compartido.formatoID, true); // true = es compartido
-                            setActiveSidebarItem(compartido.formatoID);
-                        }}
+                        text="Formatos compartidos conmigo"
+                        active={activeSidebarItem === "Formatos"}
+                        onClick={() => setActiveSidebarItem("Formatos")}
                     />
-                ))}
-            </Sidebar>
+                    {(formatosCompartidos || []).map((compartido) => (
+                        <SidebarItem
+                            key={compartido.formatoID}
+                            text={compartido.name}
+                            tipo="formatoItem"
+                            active={activeSidebarItem === compartido.formatoID}
+                            onClick={() => {
+                                handleSeleccionarFormato(compartido.formatoID, true); // true = es compartido
+                                setActiveSidebarItem(compartido.formatoID);
+                            }}
+                        />
+                    ))}
+                </Sidebar>
+            </div>
+
             <div className="flex-1 flex items-center justify-center">
                 {pantalla === "" && (
                     console.log('FormatosPlantillas:', tiposFormatos) ||
