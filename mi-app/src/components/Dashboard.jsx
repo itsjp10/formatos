@@ -413,7 +413,7 @@ function Dashboard({ logout }) {
     if (!usuario) return <p>No user was found</p>
 
     return (
-        <div className="flex bg-white min-h-screen">
+        <div className="flex bg-white min-h-screen w-full bg-white overflow-x-auto">
             <ConfirmDialog
                 show={showConfirmDelete}
                 title="¿Eliminar formato?"
