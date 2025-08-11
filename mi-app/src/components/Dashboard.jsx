@@ -27,8 +27,15 @@ function Dashboard({ logout }) {
     const [isCompartido, setIsCompartido] = useState(false);
 
     //Para saber si la sidebar está expanded o no
-    const [expanded, setExpanded] = useState(true)
+    const [expanded, setExpanded] = useState(false)
     const mainOffset = expanded ? "md:ml-64" : "md:ml-[72px]"
+
+    useEffect(() => {
+        // al montar verificamos si el usuario está en desktop, en ese caso seteamos expanded tru
+        if (!window.matchMedia("(max-width: 767px)").matches) {
+            setExpanded(true)
+        }
+    }, [])
 
     //Se busca en local storage si hay un usuario ya guardado y se carga, igualmente con la firma
     useEffect(() => {
@@ -417,7 +424,7 @@ function Dashboard({ logout }) {
     if (!usuario) return <p>No user was found</p>
 
     return (
-        <div className="flex bg-white min-h-screen w-full bg-white overflow-x-auto">
+        <div className="flex bg-white min-h-screen w-full bg-white">
             <ConfirmDialog
                 show={showConfirmDelete}
                 title="¿Eliminar formato?"
