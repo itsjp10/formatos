@@ -12,7 +12,7 @@ const SidebarContext = createContext()
 export default function Sidebar({ children, nombre, rol, logout, expanded, setExpanded }) {
 
   return (
-    <aside className={`h-screen transition-all duration-300 fixed top-0 ${expanded ? "w-64" : "w-18"} font-inter`}>
+    <aside className={`h-screen transition-all duration-300 fixed top-0 z-50 ${expanded ? "w-64" : "w-18"} font-inter bg-white`}>
       <nav className="h-full flex flex-col bg-white border-r shadow-sm">
         <div className="p-4 pb-2 flex justify-between items-center">
           <img
