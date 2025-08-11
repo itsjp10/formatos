@@ -9,11 +9,10 @@ import {
 
 const SidebarContext = createContext()
 
-export default function Sidebar({ children, nombre, rol, logout }) {
-  const [expanded, setExpanded] = useState(true)
+export default function Sidebar({ children, nombre, rol, logout, expanded, setExpanded }) {
 
   return (
-    <aside className={`h-screen transition-all duration-300 ${expanded ? "w-64" : "w-18"} font-inter`}>
+    <aside className={`h-screen transition-all duration-300 fixed top-0 ${expanded ? "w-64" : "w-18"} font-inter`}>
       <nav className="h-full flex flex-col bg-white border-r shadow-sm">
         <div className="p-4 pb-2 flex justify-between items-center">
           <img
@@ -23,7 +22,7 @@ export default function Sidebar({ children, nombre, rol, logout }) {
             alt="Logo"
           />
           <button
-            onClick={() => setExpanded((curr) => !curr)}
+            onClick={() => setExpanded(!expanded)}
             className="text-black p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100"
           >
             {expanded ? <ChevronFirst /> : <ChevronLast />}
