@@ -162,7 +162,6 @@ function Dashboard({ logout }) {
             const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/dttndicib/image/upload`, {
                 method: 'POST',
                 body: formData,
-                credentials: 'include',
             });
 
             const cloudData = await cloudRes.json();
