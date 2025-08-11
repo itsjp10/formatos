@@ -28,6 +28,7 @@ function Dashboard({ logout }) {
 
     //Para saber si la sidebar está expanded o no
     const [expanded, setExpanded] = useState(true)
+    const mainOffset = expanded ? "md:ml-64" : "md:ml-[72px]"
 
     //Se busca en local storage si hay un usuario ya guardado y se carga, igualmente con la firma
     useEffect(() => {
@@ -483,11 +484,11 @@ function Dashboard({ logout }) {
             </Sidebar>
 
 
-            <div className={`flex-1 flex items-center justify-center transition-all duration-300 ease-in-out ${expanded ? "ml-65" : "ml-20"}`}>
+            <div className={`flex-1 ${mainOffset} ml-0 flex items-center justify-center transition-all duration-300 ease-in-out  min-h-dvh md:min-h-screen overflow-y-auto`}>
                 {pantalla === "" && (
                     console.log('FormatosPlantillas:', tiposFormatos) ||
-                    <div className="flex flex-col items-center">
-                        <h1 className='text-black text-[26px] '>Seleccione un formato para empezar</h1>
+                    <div className="flex flex-col items-center justify-center">
+                        <h1 className='text-center text-black text-[26px] '>Seleccione un formato para empezar</h1>
                         <select
                             className="mt-6 p-2 border rounded text-black"
                             value=""
