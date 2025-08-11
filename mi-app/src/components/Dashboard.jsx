@@ -512,33 +512,37 @@ function Dashboard({ logout }) {
 
 
                 {pantalla === "Formato" && (
-                    <div className="p-4 text-black w-full max-w-5xl">
-                        {!isCompartido && (
-                            <Formato
-                                formatoID={selectedIdFormato}
-                                key={selectedIdFormato}
-                                contenidoFormato={formatoData}
-                                onGuardar={handleGuardarFormato}
-                                rol={usuario.role}
-                                firma={firmaSeleccionada}
-                                tipoFormato={tipoFormato}
-                            />
-                        )}
-                        {isCompartido && (
-                            <FormatoCompartido
-                                formatoID={selectedIdFormato}
-                                key={selectedIdFormato}
-                                contenidoFormato={formatoData}
-                                onGuardar={handleGuardarFormato}
-                                rol={usuario.role}
-                                firma={firmaSeleccionada}
-                                tipoFormato={tipoFormato}
-                            />
-                        )}
+                    <div className="w-full">
+                        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-4 text-black">
+                            <div className="overflow-x-auto">
+                                {!isCompartido ? (
+                                    <Formato
+                                        formatoID={selectedIdFormato}
+                                        key={selectedIdFormato}
+                                        contenidoFormato={formatoData}
+                                        onGuardar={handleGuardarFormato}
+                                        rol={usuario.role}
+                                        firma={firmaSeleccionada}
+                                        tipoFormato={tipoFormato}
+                                    />
+                                ) : (
+                                    <FormatoCompartido
+                                        formatoID={selectedIdFormato}
+                                        key={selectedIdFormato}
+                                        contenidoFormato={formatoData}
+                                        onGuardar={handleGuardarFormato}
+                                        rol={usuario.role}
+                                        firma={firmaSeleccionada}
+                                        tipoFormato={tipoFormato}
+                                    />
+                                )}
+                            </div>
 
-                        {error && <div className="mt-2 text-red-500">{error}</div>}
+                            {error && <div className="mt-2 text-red-500">{error}</div>}
+                        </div>
                     </div>
                 )}
+
                 {pantalla === "Crear plantilla" && (
                     <EditorPlantilla usuarioId={usuario.userID} onCrearPlantilla={async (plantilla) => {
                         try {
