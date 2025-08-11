@@ -493,21 +493,24 @@ function Dashboard({ logout }) {
 
             <div className={`flex-1 ${mainOffset} ml-0 flex items-center justify-center transition-all duration-300 ease-in-out  min-h-dvh md:min-h-screen overflow-y-auto`}>
                 {pantalla === "" && (
-                    console.log('FormatosPlantillas:', tiposFormatos) ||
-                    <div className="flex flex-col items-center justify-center">
-                        <h1 className='text-center text-black text-[26px] '>Seleccione un formato para empezar</h1>
+                    <div className="flex flex-col items-center justify-center w-full max-w-xl mx-auto px-4 sm:px-6 py-8 text-black">
+                        <h1 className="text-2xl sm:text-[26px] font-semibold text-center">
+                            Seleccione un formato para empezar
+                        </h1>
                         <select
                             className="mt-6 p-2 border rounded text-black"
-                            value=""
-                            onChange={e => handleCrearFormato(e.target.value)}
+                            defaultValue=""
+                            onChange={(e) => handleCrearFormato(e.target.value)}
                         >
                             <option value="" disabled>Elige un formato...</option>
-                            {tiposFormatos.map((tipo, index) => (
+                            {tiposFormatos.map((tipo) => (
                                 <option key={tipo.plantillaID} value={tipo.nombre}>{tipo.nombre}</option>
                             ))}
                         </select>
                     </div>
                 )}
+
+
                 {pantalla === "Formato" && (
                     <div className="p-4 text-black w-full max-w-5xl">
                         {!isCompartido && (
