@@ -565,8 +565,8 @@ function Dashboard({ logout }) {
                     }} />
                 )}
                 {pantalla === "Mis firmas" && (
-                    <div className="text-black max-w-3xl p-6">
-                        <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <div className="text-black w-full max-w-4xl mx-auto px-4 sm:px-6 py-6">
+                        <h1 className="mt-10 text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
                             Mis firmas
                             <div className="relative group">
                                 <Info className="w-5 h-5 cursor-pointer text-gray-500" />
@@ -576,7 +576,8 @@ function Dashboard({ logout }) {
                             </div>
                         </h1>
 
-                        <div className="max-h-[340px] overflow-y-auto space-y-4 w-full">
+                        <div className="max-h-[50vh] md:max-h-[340px] overflow-y-auto space-y-4 max-w-120">
+
                             {firmaSeleccionada && (
                                 <Firma
                                     key={firmaSeleccionada.firmaID}
@@ -586,7 +587,6 @@ function Dashboard({ logout }) {
                                     selected={true}
                                 />
                             )}
-
                             {firmas
                                 .filter((firma) => firma.firmaID !== selectedFirma)
                                 .map((firma) => (
@@ -598,12 +598,14 @@ function Dashboard({ logout }) {
                                         selected={false}
                                     />
                                 ))}
+
                         </div>
 
-                        <h2 className="text-xl font-bold mt-8 mb-2">Firmar</h2>
+                        <h2 className="text-lg sm:text-xl font-bold mt-5 mb-2">Firmar</h2>
                         <FirmaUploader onUpload={handleUpload} />
                     </div>
                 )}
+
 
             </div>
         </div>
