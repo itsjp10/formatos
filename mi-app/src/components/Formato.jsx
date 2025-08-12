@@ -246,8 +246,8 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                 />
             )}
 
-            <div className="relative overflow-auto max-h-[65vh] -mx-4 md:mx-0 px-4 md:px-">
-                <table className="table-auto border-separate border-spacing-0 w-full min-w-[900px] text-xs">
+            <div className="relative overflow-auto md:px-0">
+                <table className="table-auto border-separate border-spacing-0 w-full text-xs">
                     <thead className="sticky top-0 z-40">
                         {/* Fila 1: labels principales */}
                         <tr>

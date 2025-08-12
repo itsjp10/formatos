@@ -68,8 +68,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
             </table>
 
             {/* Contenido visible del encabezado */}
-            <div className="border border-black"
-                style={{ width: hayFilas ? 'calc(100% - 40px)' : '100%' }}>
+            <div className="border border-black w-full md:[width:calc(100%-40px)]">
                 {/* Título y datos superiores */}
                 <div className="p-2">
                     <h1 className='text-[24px] font-bold'>{tipoFormato}</h1>
