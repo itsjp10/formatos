@@ -246,19 +246,23 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                 />
             )}
 
-            <div className="relative overflow-auto md:px-0">
+            <div className="relative overflow-auto md:px-0 max-h-[70vh] md:max-h-[53vh]">
                 <table className="table-auto border-separate border-spacing-0 w-full text-xs">
                     <thead className="sticky top-0 z-40">
                         {/* Fila 1: labels principales */}
+                        {/* Fila 1: labels principales */}
                         <tr>
                             {data.columnas?.map((col, colIndex) => {
-                                const esAPTO = col.label === 'APTO'
+                                const esAPTO = col.label === 'APTO';
                                 if (col.fixed || esAPTO) {
                                     return (
                                         <th
                                             key={colIndex}
                                             rowSpan={3}
-                                            className={`border px-2 py-1 text-center align-middle bg-gray-200 ${esAPTO ? "sticky left-0 z-30" : ""}`}
+                                            className={`border px-2 py-1 text-center align-middle bg-gray-200 ${esAPTO
+                                                    ? "sticky left-0 top-0 z-50"       // <- columna y header fijos
+                                                    : "sticky top-0 z-40"              // <- headers fijos arriba
+                                                }`}
                                         >
                                             {col.label}
                                         </th>
@@ -268,7 +272,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                                         <th
                                             key={colIndex}
                                             colSpan={col.subheaders.length * 2}
-                                            className="bg-gray-200 border px-2 py-1 text-center"
+                                            className="bg-gray-200 border px-2 py-1 text-center sticky top-0 z-40"
                                         >
                                             {col.label}
                                         </th>
@@ -279,7 +283,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                                             key={colIndex}
                                             colSpan={2}
                                             rowSpan={2}
-                                            className="bg-gray-200 border px-2 py-1 text-center align-middle"
+                                            className="bg-gray-200 border px-2 py-1 text-center align-middle sticky top-0 z-40"
                                         >
                                             {col.label}
                                         </th>
@@ -287,6 +291,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                                 }
                             })}
                         </tr>
+
 
                         {/* Fila 2: subheaders (solo si los hay) */}
                         <tr>

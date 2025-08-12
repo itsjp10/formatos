@@ -512,8 +512,7 @@ function Dashboard({ logout }) {
 
                 {pantalla === "Formato" && (
                     <div className="w-full">
-                        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-4 text-black">
-                            <div className="overflow-x-auto">
+                        <div className="mx-auto w-full lg:max-w-9/10 px-4 sm:px-6 py-4 text-black">
                                 {!isCompartido ? (
                                     <Formato
                                         formatoID={selectedIdFormato}
@@ -535,7 +534,6 @@ function Dashboard({ logout }) {
                                         tipoFormato={tipoFormato}
                                     />
                                 )}
-                            </div>
 
                             {error && <div className="mt-2 text-red-500">{error}</div>}
                         </div>
