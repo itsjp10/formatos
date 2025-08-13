@@ -54,88 +54,87 @@ function Dashboard({ logout }) {
     useEffect(() => {
         if (!usuario) return;
 
-        const path = window.location.pathname;               // p.ej. /formato/cku8...sj
-        const match = path.match(/^\/formato\/([A-Za-z0-9_-]+)$/);
-        if (!match) return;
+        const raw = sessionStorage.getItem("publicLinkHandoff");
+        if (!raw) return;
 
-        const publicLink = match[1];
+        // Consumimos el handoff (elimínalo para evitar re-procesos)
+        sessionStorage.removeItem("publicLinkHandoff");
+
+        const { publicLink } = JSON.parse(raw || "{}");
+        if (!publicLink) return;
 
         (async () => {
             try {
                 // 1) Resolver el link -> obtener el formato
-                const res = await fetch(`/api/formatos/by-public-link?publicLink=${publicLink}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
+                const res = await fetch(`/api/formatos/by-public-link/${encodeURIComponent(publicLink)}`, {
+                    method: "GET",
+                    credentials: "include",
                 });
                 if (!res.ok) {
                     const { error } = await res.json().catch(() => ({}));
-                    throw new Error(error || 'No se encontró el formato para este enlace');
+                    throw new Error(error || "No se encontró el formato para este enlace");
                 }
 
-                // Debe devolver: { formatoID, usuarioId, data, tipo, name }
+                // Debe devolver: { formatoID, usuarioId, data, tipo, name, publicLink }
                 const formato = await res.json();
 
                 // 2) ¿Es mío?
                 if (formato.usuarioId === usuario.userID) {
-                    // Caso A: Dueño -> abrir como formato normal
+                    // Dueño -> abrir como formato normal
                     setIsCompartido(false);
                     setSelectedIdFormato(formato.formatoID);
                     setFormatoData(JSON.parse(formato.data));
                     setTipoFormato(formato.tipo);
                     setActiveSidebarItem(formato.formatoID);
-                    setPantalla('Formato');
+                    setPantalla("Formato");
+                    return;
+                }
+
+                // 3) ¿Ya lo tengo como compartido?
+                const yaEsta = (formatosCompartidos || []).some(
+                    (f) => f.formatoID === formato.formatoID
+                );
+
+                if (yaEsta) {
+                    // Compartido existente -> abrir directamente
+                    setIsCompartido(true);
+                    setSelectedIdFormato(formato.formatoID);
+                    setFormatoData(JSON.parse(formato.data));
+                    setTipoFormato(formato.tipo);
+                    setActiveSidebarItem(formato.formatoID);
+                    setPantalla("Formato");
                 } else {
-                    // 3) ¿Ya lo tengo como compartido?
-                    const yaEsta = (formatosCompartidos || []).some(
-                        (f) => f.formatoID === formato.formatoID
-                    );
-
-                    if (yaEsta) {
-                        // Caso B: Compartido existente -> abrir directamente
-                        setIsCompartido(true);
-                        setSelectedIdFormato(formato.formatoID);
-                        setFormatoData(JSON.parse(formato.data));
-                        setTipoFormato(formato.tipo);
-                        setActiveSidebarItem(formato.formatoID);
-                        setPantalla('Formato');
-                    } else {
-                        // Caso C: Compartido nuevo -> crear vínculo y abrir
-                        const attachRes = await fetch(`/api/formatos/compartidos`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include',
-                            body: JSON.stringify({
-                                userId: usuario.userID,
-                                formatoId: formato.formatoID,
-                            }),
-                        });
-                        if (!attachRes.ok) {
-                            const { error } = await attachRes.json().catch(() => ({}));
-                            throw new Error(error || 'No fue posible agregar el formato compartido');
-                        }
-
-                        // Devuelve el mismo objeto de formato (o al menos {formatoID, data, tipo, name})
-                        const formatoAdjunto = await attachRes.json();
-
-                        setFormatosCompartidos((prev) => [...prev, formatoAdjunto]);
-                        setIsCompartido(true);
-                        setSelectedIdFormato(formatoAdjunto.formatoID);
-                        setFormatoData(JSON.parse(formatoAdjunto.data));
-                        setTipoFormato(formatoAdjunto.tipo);
-                        setActiveSidebarItem(formatoAdjunto.formatoID);
-                        setPantalla('Formato');
+                    // Compartido nuevo -> crear vínculo y abrir
+                    const attachRes = await fetch(`/api/formatos/compartidos`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            userId: usuario.userID,
+                            formatoId: formato.formatoID,
+                        }),
+                    });
+                    if (!attachRes.ok) {
+                        const { error } = await attachRes.json().catch(() => ({}));
+                        throw new Error(error || "No fue posible agregar el formato compartido");
                     }
+
+                    const formatoAdjunto = await attachRes.json();
+
+                    setFormatosCompartidos((prev) => [...prev, formatoAdjunto]);
+                    setIsCompartido(true);
+                    setSelectedIdFormato(formatoAdjunto.formatoID);
+                    setFormatoData(JSON.parse(formatoAdjunto.data));
+                    setTipoFormato(formatoAdjunto.tipo);
+                    setActiveSidebarItem(formatoAdjunto.formatoID);
+                    setPantalla("Formato");
                 }
             } catch (e) {
                 console.error(e);
                 setError(e.message);
-            } finally {
-                // 4) Limpio la URL para volver a "/"
-                window.history.replaceState({}, document.title, '/');
             }
         })();
-        // ⚠️ Dependemos de formatosCompartidos para detectar "ya estaba"
+        // Dependemos de formatosCompartidos para el chequeo "ya estaba"
     }, [usuario, formatosCompartidos]);
 
 
