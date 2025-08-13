@@ -19,7 +19,15 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
     // referencia para evitar bucles infinitos
     const isRemoteUpdate = useRef(false);
 
+    // Crea el socket dentro del componente
+    const socketRef = useRef(null);
+
     useEffect(() => {
+        // Solo crea el socket si no existe
+        if (!socketRef.current) {
+            socketRef.current = io("http://localhost:3001");
+        }
+        const socket = socketRef.current;
         socket.emit("join-formato", formatoID);
 
         socket.on("formato-actualizado", (newData) => {
@@ -42,6 +50,9 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
 
         return () => {
             socket.off("formato-actualizado");
+            // Desconecta el socket al desmontar el componente
+            socket.disconnect();
+            socketRef.current = null;
         };
     }, [formatoID]);
 
@@ -260,8 +271,8 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                                             key={colIndex}
                                             rowSpan={3}
                                             className={`border px-2 py-1 text-center align-middle bg-gray-200 ${esAPTO
-                                                    ? "sticky left-0 top-0 z-50"       // <- columna y header fijos
-                                                    : "sticky top-0 z-40"              // <- headers fijos arriba
+                                                ? "sticky left-0 top-0 z-50"       // <- columna y header fijos
+                                                : "sticky top-0 z-40"              // <- headers fijos arriba
                                                 }`}
                                         >
                                             {col.label}
