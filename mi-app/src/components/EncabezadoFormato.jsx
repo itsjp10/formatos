@@ -121,7 +121,8 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, onTit
                             className={`w-full p-1 outline-none ${editar ? 'cursor: vertical-text;' : 'cursor-default'}`}
                         />
                     </div>
-                    <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">CONTRATISTA:</div>
+                    <div className="border-r border-black p-1 font-semibold leading-tight
+               whitespace-normal break-words hyphens-auto">CONTRATISTA:</div>
                     <div className="col-span-1">
                         <input
                             readOnly={!editar}

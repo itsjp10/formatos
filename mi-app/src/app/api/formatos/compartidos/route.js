@@ -29,3 +29,27 @@ export async function GET(req) {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }
+
+export async function POST(req) {
+  const { userId, formatoId } = await req.json()
+  if (!userId || !formatoId) {
+    return new Response(JSON.stringify({ error: 'userId y formatoId son requeridos' }), { status: 400 })
+  }
+
+  await prisma.formatoUsuario.upsert({
+    where: { userId_formatoId: { userId, formatoId } },
+    update: {},
+    create: { userId, formatoId, creadoPor: false }
+  })
+
+  const formato = await prisma.formato.findUnique({
+    where: { formatoID: formatoId },
+    select: { formatoID: true, usuarioId: true, data: true, tipo: true, name: true, publicLink: true }
+  })
+
+  if (!formato) {
+    return new Response(JSON.stringify({ error: 'Formato no encontrado' }), { status: 404 })
+  }
+
+  return Response.json(formato)
+}

@@ -50,6 +50,95 @@ function Dashboard({ logout }) {
         setLoading(false)
     }, [])
 
+    // ⬇️ NUEVO useEffect: abrir formato desde link público
+    useEffect(() => {
+        if (!usuario) return;
+
+        const path = window.location.pathname;               // p.ej. /formato/cku8...sj
+        const match = path.match(/^\/formato\/([A-Za-z0-9_-]+)$/);
+        if (!match) return;
+
+        const publicLink = match[1];
+
+        (async () => {
+            try {
+                // 1) Resolver el link -> obtener el formato
+                const res = await fetch(`/api/formatos/by-public-link?publicLink=${publicLink}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                });
+                if (!res.ok) {
+                    const { error } = await res.json().catch(() => ({}));
+                    throw new Error(error || 'No se encontró el formato para este enlace');
+                }
+
+                // Debe devolver: { formatoID, usuarioId, data, tipo, name }
+                const formato = await res.json();
+
+                // 2) ¿Es mío?
+                if (formato.usuarioId === usuario.userID) {
+                    // Caso A: Dueño -> abrir como formato normal
+                    setIsCompartido(false);
+                    setSelectedIdFormato(formato.formatoID);
+                    setFormatoData(JSON.parse(formato.data));
+                    setTipoFormato(formato.tipo);
+                    setActiveSidebarItem(formato.formatoID);
+                    setPantalla('Formato');
+                } else {
+                    // 3) ¿Ya lo tengo como compartido?
+                    const yaEsta = (formatosCompartidos || []).some(
+                        (f) => f.formatoID === formato.formatoID
+                    );
+
+                    if (yaEsta) {
+                        // Caso B: Compartido existente -> abrir directamente
+                        setIsCompartido(true);
+                        setSelectedIdFormato(formato.formatoID);
+                        setFormatoData(JSON.parse(formato.data));
+                        setTipoFormato(formato.tipo);
+                        setActiveSidebarItem(formato.formatoID);
+                        setPantalla('Formato');
+                    } else {
+                        // Caso C: Compartido nuevo -> crear vínculo y abrir
+                        const attachRes = await fetch(`/api/formatos/compartidos`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                userId: usuario.userID,
+                                formatoId: formato.formatoID,
+                            }),
+                        });
+                        if (!attachRes.ok) {
+                            const { error } = await attachRes.json().catch(() => ({}));
+                            throw new Error(error || 'No fue posible agregar el formato compartido');
+                        }
+
+                        // Devuelve el mismo objeto de formato (o al menos {formatoID, data, tipo, name})
+                        const formatoAdjunto = await attachRes.json();
+
+                        setFormatosCompartidos((prev) => [...prev, formatoAdjunto]);
+                        setIsCompartido(true);
+                        setSelectedIdFormato(formatoAdjunto.formatoID);
+                        setFormatoData(JSON.parse(formatoAdjunto.data));
+                        setTipoFormato(formatoAdjunto.tipo);
+                        setActiveSidebarItem(formatoAdjunto.formatoID);
+                        setPantalla('Formato');
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                setError(e.message);
+            } finally {
+                // 4) Limpio la URL para volver a "/"
+                window.history.replaceState({}, document.title, '/');
+            }
+        })();
+        // ⚠️ Dependemos de formatosCompartidos para detectar "ya estaba"
+    }, [usuario, formatosCompartidos]);
+
+
 
     // Firma seleccionada
     const firmaSeleccionada = firmas.find((firma) => firma.firmaID === selectedFirma);
@@ -422,6 +511,10 @@ function Dashboard({ logout }) {
 
     if (!usuario) return <p>No user was found</p>
 
+    const currentList = isCompartido ? formatosCompartidos : formatos;
+    const currentFormato = currentList.find(f => f.formatoID === selectedIdFormato);
+    const publicLink = currentFormato?.publicLink;
+
     return (
         <div className="flex bg-white min-h-screen w-full bg-white">
             <ConfirmDialog
@@ -508,32 +601,31 @@ function Dashboard({ logout }) {
                         </select>
                     </div>
                 )}
-
-
                 {pantalla === "Formato" && (
                     <div className="w-full">
                         <div className="mx-auto w-full lg:max-w-9/10 px-4 sm:px-6 py-4 text-black">
-                                {!isCompartido ? (
-                                    <Formato
-                                        formatoID={selectedIdFormato}
-                                        key={selectedIdFormato}
-                                        contenidoFormato={formatoData}
-                                        onGuardar={handleGuardarFormato}
-                                        rol={usuario.role}
-                                        firma={firmaSeleccionada}
-                                        tipoFormato={tipoFormato}
-                                    />
-                                ) : (
-                                    <FormatoCompartido
-                                        formatoID={selectedIdFormato}
-                                        key={selectedIdFormato}
-                                        contenidoFormato={formatoData}
-                                        onGuardar={handleGuardarFormato}
-                                        rol={usuario.role}
-                                        firma={firmaSeleccionada}
-                                        tipoFormato={tipoFormato}
-                                    />
-                                )}
+                            {!isCompartido ? (
+                                <Formato
+                                    formatoID={selectedIdFormato}
+                                    key={selectedIdFormato}
+                                    contenidoFormato={formatoData}
+                                    onGuardar={handleGuardarFormato}
+                                    rol={usuario.role}
+                                    firma={firmaSeleccionada}
+                                    tipoFormato={tipoFormato}
+                                    publicLink={publicLink}
+                                />
+                            ) : (
+                                <FormatoCompartido
+                                    formatoID={selectedIdFormato}
+                                    key={selectedIdFormato}
+                                    contenidoFormato={formatoData}
+                                    onGuardar={handleGuardarFormato}
+                                    rol={usuario.role}
+                                    firma={firmaSeleccionada}
+                                    tipoFormato={tipoFormato}
+                                />
+                            )}
 
                             {error && <div className="mt-2 text-red-500">{error}</div>}
                         </div>

@@ -199,7 +199,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
     const isSignatureField = (label) => label === 'FIRMA';
 
     return (
-        <div className="w-full">
+        <div className="w-full overflow-x-hidden">
             <button
                 type="button"
                 onClick={async () => {
@@ -525,17 +525,17 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                 <Plus className="w-4 h-4" />
             </button>
 
-            <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4 max-w-5xl mx-auto mt-5 mb-10 sm:mb-0">
                 {/* CONTRATISTA */}
 
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
+                <div className="min-w-0 flex flex-col items-center">
+                    <div className="h-20 mb-2 flex items-center justify-center w-full">
+                        <div className="max-w-full">
                             {isFirmado.contratista ? (
                                 <img
                                     src={firmas.firmaContra}
                                     alt={`Firma ${firma.firmaID}`}
-                                    className="h-full object-contain"
+                                    className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "contratista" ? (
                                 <button
@@ -595,14 +595,14 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                 </div>
 
                 {/* RESIDENTE DE TORRE */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
+                <div className="min-w-0 flex flex-col items-center">
+                    <div className="h-20 mb-2 flex items-center justify-center w-full">
+                        <div className="max-w-full">
                             {isFirmado.residente ? (
                                 <img
                                     src={firmas.firmaRes}
                                     alt={`Firma ${firma.firmaID}`}
-                                    className="h-full object-contain"
+                                    className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "residente" ? (
                                 <button
@@ -662,14 +662,14 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                 </div>
 
                 {/* SUPERVISIÓN TÉCNICA */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
+                <div className="min-w-0 flex flex-col items-center">
+                    <div className="h-20 mb-2 flex items-center justify-center w-full">
+                        <div className="max-w-full">
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}
                                     alt={`Firma ${firma.firmaID}`}
-                                    className="h-full object-contain"
+                                    className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "supervisor" ? (
                                 <button
