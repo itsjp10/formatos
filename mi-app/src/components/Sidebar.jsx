@@ -182,7 +182,7 @@ export function SidebarItem({
         `}
         onClick={(e) => handleNavigate(e, onClick)}
       >
-        <span className="overflow-hidden text-black font-inter w-52 truncate group-hover:w-45">
+        <span className="overflow-hidden text-black font-inter w-52 truncate group-hover:w-45 text-sm">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -249,10 +249,9 @@ export function SidebarItem({
     return (
       <li
         className={`py-2 my-1 ${expanded ? "pl-3" : "pl-0"}`}
-        onClick={(e) => handleNavigate(e, onClick)}
       >
         <span
-          className={`text-black font-inter text-sm font-semibold transition-all ${expanded ? "block" : "hidden"}`}
+          className={`text-black font-inter text-sm font-bold transition-all ${expanded ? "block" : "hidden"}`}
         >
           {text}
         </span>
