@@ -1,6 +1,7 @@
 import { ChevronLast, ChevronFirst, Menu } from "lucide-react"
 import { useContext, createContext, useState, useRef, useEffect } from "react"
 import { LogOut, MoreHorizontal, Trash, Pencil, ChartNoAxesGantt } from "lucide-react"
+import Portal from "../utils/Portal"
 
 const SidebarContext = createContext()
 
@@ -165,28 +166,79 @@ export function SidebarItem({
     const [nombreEditado, setNombreEditado] = useState(text)
     const inputRef = useRef(null)
     const menuRef = useRef()
+    const triggerRef = useRef(null)
+
+    const [pos, setPos] = useState({ top: 0, left: 0 })
+
+    const canEdit = !!onRenombrar && editar === true
 
     useEffect(() => {
       setNombreEditado(text)
     }, [text])
 
     useEffect(() => {
-      function handleClickOutside(e) {
-        const fueraInput = inputRef.current && !inputRef.current.contains(e.target)
-        const fueraMenu = menuRef.current && !menuRef.current.contains(e.target)
-        if (fueraInput) finalizarEdicion()
-        if (fueraMenu) setShowMenu(false)
+      if (!showMenu) return
+      const updatePos = () => {
+        const rect = triggerRef.current?.getBoundingClientRect()
+        if (!rect) return
+        const gap = 8
+        const menuW = 176 // w-44
+        let top = rect.bottom + gap
+        let left = rect.right - menuW
+        left = Math.min(Math.max(8, left), window.innerWidth - menuW - 8)
+        setPos({ top, left })
       }
-      document.addEventListener("mousedown", handleClickOutside)
-      return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [])
+      updatePos()
+      // usa capture=true para detectar scrolls en contenedores con overflow
+      window.addEventListener("scroll", updatePos, true)
+      window.addEventListener("resize", updatePos)
+      return () => {
+        window.removeEventListener("scroll", updatePos, true)
+        window.removeEventListener("resize", updatePos)
+      }
+    }, [showMenu])
+
+
 
     useEffect(() => {
-      if (isEditing && inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.select()
+      if (!showMenu) return
+      const handleClickOutside = (e) => {
+        const t = e.target
+        if (menuRef.current && menuRef.current.contains(t)) return
+        if (triggerRef.current && triggerRef.current.contains(t)) return
+        setShowMenu(false)
       }
-    }, [isEditing])
+      const handleEsc = (e) => {
+        if (e.key === "Escape") setShowMenu(false)
+      }
+      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("keydown", handleEsc)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+        document.removeEventListener("keydown", handleEsc)
+      }
+    }, [showMenu])
+
+    useEffect(() => {
+      if (!showMenu) return
+      const updatePos = () => {
+        const rect = triggerRef.current?.getBoundingClientRect()
+        if (!rect) return
+        const gap = 8
+        const menuW = 176 // w-44
+        let top = rect.bottom + gap
+        let left = rect.right - menuW
+        left = Math.min(Math.max(8, left), window.innerWidth - menuW - 8)
+        setPos({ top, left })
+      }
+      updatePos()
+      window.addEventListener("scroll", updatePos, { passive: true, capture: true })
+      window.addEventListener("resize", updatePos)
+      return () => {
+        window.removeEventListener("scroll", updatePos, { capture: true })
+        window.removeEventListener("resize", updatePos)
+      }
+    }, [showMenu])
 
     const finalizarEdicion = () => {
       if (!isEditing) return
@@ -197,6 +249,18 @@ export function SidebarItem({
         onRenombrar?.(formatoID, nuevo)
       }
     }
+
+    //Esto se hace para que al dar click se seleccione el input de formato para editar
+    useEffect(() => {
+      if (!isEditing) return
+      // Espera al paint para asegurar que el <input> ya está en el DOM
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+          inputRef.current.select()
+        }
+      })
+    }, [isEditing])
 
     return (
       <li
@@ -226,18 +290,28 @@ export function SidebarItem({
           )}
         </span>
 
-        <div className="relative" ref={menuRef}>
-          <MoreHorizontal
-            className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowMenu((prev) => !prev)
-            }}
-          />
+        <button
+          ref={triggerRef}
+          className="relative z-10 p-1"
+          onClick={(e) => {
+            e.stopPropagation()
+            setShowMenu((p) => !p)
+          }}
+          aria-haspopup="menu"
+          aria-expanded={showMenu}
+        >
+          <MoreHorizontal className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200" />
+        </button>
 
-          {showMenu && (
-            <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-              {editar && (
+        {showMenu && (
+          <Portal>
+            <div
+              ref={menuRef}
+              role="menu"
+              className="fixed z-[1000] w-44 bg-white border border-gray-200 rounded-lg shadow-lg"
+              style={{ top: pos.top, left: pos.left }}
+            >
+              {canEdit && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -266,8 +340,8 @@ export function SidebarItem({
                 Eliminar
               </button>
             </div>
-          )}
-        </div>
+          </Portal>
+        )}
       </li>
     )
   }

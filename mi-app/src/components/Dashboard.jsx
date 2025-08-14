@@ -591,7 +591,6 @@ function Dashboard({ logout }) {
                                 setActiveSidebarItem(compartido.formatoID)
                             }}
                             formatoID={compartido.formatoID}
-                            onRenombrar={undefined} // normalmente no renombramos los compartidos
                             editar={false}
                         />
                     ))}
