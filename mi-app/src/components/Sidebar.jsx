@@ -177,12 +177,12 @@ export function SidebarItem({
         className={`
           relative group flex items-center justify-between py-2 px-3 my-1 h-10
           font-medium rounded-md cursor-pointer transition-colors
-          text-black font-inter
+          text-black font-inter group
           ${active ? "bg-gradient-to-tr from-indigo-200 to-indigo-100" : "hover:bg-indigo-50"}
         `}
         onClick={(e) => handleNavigate(e, onClick)}
       >
-        <span className="overflow-hidden transition-all text-black font-inter w-52">
+        <span className="overflow-hidden text-black font-inter w-52 truncate group-hover:w-45">
           {isEditing ? (
             <input
               ref={inputRef}
