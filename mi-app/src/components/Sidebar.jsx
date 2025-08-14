@@ -300,7 +300,7 @@ export function SidebarItem({
           aria-haspopup="menu"
           aria-expanded={showMenu}
         >
-          <MoreHorizontal className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200" />
+          <MoreHorizontal className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 hover:cursor-pointer" />
         </button>
 
         {showMenu && (
@@ -318,7 +318,7 @@ export function SidebarItem({
                     setShowMenu(false)
                     setIsEditing(true)
                   }}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
                 >
                   <Pencil size={16} />
                   Cambiar nombre
@@ -334,7 +334,7 @@ export function SidebarItem({
                     )
                   }, 0)
                 }}
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 font-semibold"
               >
                 <Trash size={16} />
                 Eliminar
