@@ -147,7 +147,8 @@ export function SidebarItem({
   tipo,
   onClick,
   formatoID,
-  onRenombrar
+  onRenombrar,
+  editar = true
 }) {
   const { expanded, setExpanded } = useContext(SidebarContext)
 
@@ -236,17 +237,19 @@ export function SidebarItem({
 
           {showMenu && (
             <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowMenu(false)
-                  setIsEditing(true)
-                }}
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                <Pencil size={16} />
-                Cambiar nombre
-              </button>
+              {editar && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowMenu(false)
+                    setIsEditing(true)
+                  }}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  <Pencil size={16} />
+                  Cambiar nombre
+                </button>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation()

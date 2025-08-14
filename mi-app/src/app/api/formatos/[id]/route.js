@@ -30,19 +30,41 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, context) {
   const { id } = await context.params;
+  const url = new URL(req.url)
+  const isShared = url.searchParams.get('shared') === '1'
+  const userId = url.searchParams.get('userId') || undefined
 
   if (!id) {
-    return NextResponse.json({ error: 'Falta el ID del formato a eliminar' }, { status: 400 });
+    return NextResponse.json({ error: 'Falta el ID del formato a eliminar' }, { status: 400 })
   }
 
   try {
-    await prisma.formato.delete({
-      where: { formatoID: id },
-    });
+    if (isShared) {
+      if (!userId) {
+        return NextResponse.json({ error: 'Falta userId para eliminar formato compartido' }, { status: 400 })
+      }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+      await prisma.formatoUsuario.delete({
+        where: {
+          userId_formatoId: {
+            userId,
+            formatoId: id,
+          },
+        },
+      })
+
+      return NextResponse.json({ success: true, removed: 'shared' }, { status: 200 })
+    }
+
+    // PROPIO: primero borra los FormatoUsuario que referencian el formato, luego el Formato.
+    await prisma.$transaction(async (tx) => {
+      await tx.formatoUsuario.deleteMany({ where: { formatoId: id } })
+      await tx.formato.delete({ where: { formatoID: id } })
+    })
+
+    return NextResponse.json({ success: true, removed: 'owned' }, { status: 200 })
   } catch (err) {
-    console.error('Error al eliminar formato:', err);
-    return NextResponse.json({ error: 'Error al eliminar formato' }, { status: 500 });
+    console.error('Error al eliminar formato:', err)
+    return NextResponse.json({ error: 'Error al eliminar formato' }, { status: 500 })
   }
 }

@@ -222,24 +222,44 @@ function Dashboard({ logout }) {
     const handleDeleteFormato = async () => {
         if (!formatoToDelete) return;
         try {
-            const res = await fetch(`/api/formatos/${formatoToDelete}`, { method: 'DELETE', credentials: 'include', });
+            // ¿Es un formato compartido para este usuario?
+            const esCompartido = (formatosCompartidos || []).some(f => f.formatoID === formatoToDelete);
+
+            const url = esCompartido
+                ? `/api/formatos/${formatoToDelete}?shared=1&userId=${usuario.userID}`
+                : `/api/formatos/${formatoToDelete}`;
+
+            const res = await fetch(url, { method: 'DELETE', credentials: 'include' });
+
             if (!res.ok) {
-                const { error } = await res.json();
+                const { error } = await res.json().catch(() => ({}));
                 throw new Error(error || 'Error al eliminar formato');
             }
 
-            // Actualizar lista de formatos local
-            setFormatos(prev => prev.filter(f => f.formatoID !== formatoToDelete));
-            if (selectedIdFormato === formatoToDelete) {
-                setSelectedIdFormato(null);
-                setPantalla('');
+            // Actualiza la lista correspondiente
+            if (esCompartido) {
+                setFormatosCompartidos(prev => prev.filter(f => f.formatoID !== formatoToDelete));
+                // Si el que está abierto es justo éste, resetea selección
+                if (selectedIdFormato === formatoToDelete) {
+                    setSelectedIdFormato(null);
+                    setPantalla('');
+                    setIsCompartido(false);
+                }
+            } else {
+                setFormatos(prev => prev.filter(f => f.formatoID !== formatoToDelete));
+                if (selectedIdFormato === formatoToDelete) {
+                    setSelectedIdFormato(null);
+                    setPantalla('');
+                }
             }
+
             setFormatoToDelete(null);
             setShowConfirmDelete(false);
         } catch (err) {
             alert('Error: ' + err.message);
         }
     };
+
 
     const handleUpload = async (dataUrl) => {
         try {
@@ -572,6 +592,7 @@ function Dashboard({ logout }) {
                             }}
                             formatoID={compartido.formatoID}
                             onRenombrar={undefined} // normalmente no renombramos los compartidos
+                            editar={false}
                         />
                     ))}
                 </SidebarSection>
