@@ -4,6 +4,31 @@ import { LogOut, MoreHorizontal, Trash, Pencil, ChartNoAxesGantt } from "lucide-
 
 const SidebarContext = createContext()
 
+export function SidebarSection({ title, children }) {
+  const { expanded } = useContext(SidebarContext)
+  return (
+    <div className="flex flex-col min-h-0 group/section">
+      {/* Título solo cuando está expandido */}
+      <div className={`text-black font-inter text-sm font-bold px-3 ${expanded ? "block" : "hidden"}`}>
+        {title}
+      </div>
+
+      {/* Contenedor que NO fuerza altura: solo limita con max-h y hace scroll si excede */}
+      <div className="mt-1 px-3 max-h-[28vh] overflow-y-auto
+          scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent
+          scrollbar-thumb-rounded-full
+          hover:scrollbar-thumb-gray-400
+          [&::-webkit-scrollbar]:w-1
+          [&::-webkit-scrollbar-track]:bg-transparent
+          [&::-webkit-scrollbar-thumb]:bg-transparent
+          group-hover/section:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+        <ul className="space-y-1">{children}</ul>
+      </div>
+    </div>
+  )
+}
+
+
 export default function Sidebar({
   children,
   nombre,
@@ -175,14 +200,14 @@ export function SidebarItem({
     return (
       <li
         className={`
-          relative group flex items-center justify-between py-2 px-3 my-1 h-10
+          relative group/item flex items-center justify-between py-2 px-3 my-1 h-10
           font-medium rounded-md cursor-pointer transition-colors
-          text-black font-inter group
+          text-black font-inter
           ${active ? "bg-gradient-to-tr from-indigo-200 to-indigo-100" : "hover:bg-indigo-50"}
         `}
         onClick={(e) => handleNavigate(e, onClick)}
       >
-        <span className="overflow-hidden text-black font-inter w-52 truncate group-hover:w-45 text-sm">
+        <span className="overflow-hidden text-black font-inter w-52 truncate group-hover/item:w-35 text-sm">
           {isEditing ? (
             <input
               ref={inputRef}
@@ -202,7 +227,7 @@ export function SidebarItem({
 
         <div className="relative" ref={menuRef}>
           <MoreHorizontal
-            className="w-4 h-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200"
             onClick={(e) => {
               e.stopPropagation()
               setShowMenu((prev) => !prev)

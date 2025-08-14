@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from 'react'
-import Sidebar, { SidebarItem } from './Sidebar'
+import Sidebar, { SidebarItem, SidebarSection } from './Sidebar'
 import { Signature, Plus, LayoutTemplate, Info } from "lucide-react"
 import Formato from './Formato'
 import FormatoCompartido from './FormatoCompartido'
@@ -546,39 +546,35 @@ function Dashboard({ logout }) {
 
                 }
                 <hr className="my-3" />
-                <SidebarItem
-                    text="Formatos"
-                    active={activeSidebarItem === "Formatos"}
-                    onClick={() => setActiveSidebarItem("Formatos")}
-                />
-                {(formatos || []).map((formato) => (
-                    <SidebarItem
-                        key={formato.formatoID}
-                        text={formato.name}
-                        tipo="formatoItem"
-                        active={activeSidebarItem === formato.formatoID}
-                        onClick={() => handleSeleccionarFormato(formato.formatoID)}
-                        formatoID={formato.formatoID}
-                        onRenombrar={handleRenombrar}
-                    />
-                ))}
-                <SidebarItem
-                    text="Formatos compartidos conmigo"
-                    active={activeSidebarItem === "Formatos"}
-                    onClick={() => setActiveSidebarItem("Formatos")}
-                />
-                {(formatosCompartidos || []).map((compartido) => (
-                    <SidebarItem
-                        key={compartido.formatoID}
-                        text={compartido.name}
-                        tipo="formatoItem"
-                        active={activeSidebarItem === compartido.formatoID}
-                        onClick={() => {
-                            handleSeleccionarFormato(compartido.formatoID, true); // true = es compartido
-                            setActiveSidebarItem(compartido.formatoID);
-                        }}
-                    />
-                ))}
+                <SidebarSection title="Formatos">
+                    {(formatos || []).map((formato) => (
+                        <SidebarItem
+                            key={formato.formatoID}
+                            text={formato.name}
+                            tipo="formatoItem"
+                            active={activeSidebarItem === formato.formatoID}
+                            onClick={() => handleSeleccionarFormato(formato.formatoID)}
+                            formatoID={formato.formatoID}
+                            onRenombrar={handleRenombrar}
+                        />
+                    ))}
+                </SidebarSection>
+                <SidebarSection title="Formatos compartidos conmigo">
+                    {(formatosCompartidos || []).map((compartido) => (
+                        <SidebarItem
+                            key={compartido.formatoID}
+                            text={compartido.name}
+                            tipo="formatoItem"
+                            active={activeSidebarItem === compartido.formatoID}
+                            onClick={() => {
+                                handleSeleccionarFormato(compartido.formatoID, true)
+                                setActiveSidebarItem(compartido.formatoID)
+                            }}
+                            formatoID={compartido.formatoID}
+                            onRenombrar={undefined} // normalmente no renombramos los compartidos
+                        />
+                    ))}
+                </SidebarSection>
             </Sidebar>
 
 
