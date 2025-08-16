@@ -211,32 +211,14 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
 
     return (
         <div className="w-full overflow-x-hidden">
-            <button
-                type="button"
-                onClick={async () => {
-                    try {
-                        const res = await fetch(`/api/formatos/${formatoID}/pdf`, {
-                            method: 'GET',
-                            credentials: 'include',
-                        });
-                        if (!res.ok) throw new Error('No se pudo generar el PDF');
-                        const blob = await res.blob();
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `formato-${formatoID}.pdf`;
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                        URL.revokeObjectURL(url);
-                    } catch (e) {
-                        alert('Error descargando PDF: ' + e.message);
-                    }
-                }}
-                className="no-print mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1 text-sm"
+            <a
+                href={`/api/formatos/${formatoID}/pdf`}
+                download={`formato-${formatoID}.pdf`}
+                className="no-print mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1 text-sm inline-block"
             >
                 Descargar PDF
-            </button>
+            </a>
+
             {/* Encabezado del formato */}
             {titulos && (
                 <EncabezadoFormato
