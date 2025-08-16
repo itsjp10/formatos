@@ -39,7 +39,7 @@ export default async function PrintFormatoPage({ params }) {
     const isSignatureField = (label) => label === 'FIRMA';
 
     return (
-        <div className="w-full overflow-x-auto">
+        <div className="w-full">
             {/* Encabezado del formato */}
             {titulos && (
                 <EncabezadoFormatoPDF
@@ -186,6 +186,7 @@ export default async function PrintFormatoPage({ params }) {
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
                                                         className="border text-center h-[40px]"
+                                                        style={{ width: 100, minWidth: 100 }}
                                                     >
                                                         {row[fullKey] ? (
                                                             <div className="relative h-10 flex items-center justify-center">
@@ -217,13 +218,6 @@ export default async function PrintFormatoPage({ params }) {
                                             ];
                                         });
                                     })}
-                                    {subIndex === 0 && (
-                                        <td
-                                            rowSpan={numSubfilas}
-                                            className="px-1 py-1 text-center align-middle"
-                                        >
-                                        </td>
-                                    )}
                                 </tr>
                             );
                         })

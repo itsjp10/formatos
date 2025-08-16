@@ -43,12 +43,6 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hayFi
                             }
                         })}
                         {/* Columna oculta para simular la celda del botón eliminar */}
-                        <th
-                            className="w-[40px] border-0 px-2 py-1"
-                            rowSpan={3}
-                        >
-                            &nbsp;
-                        </th>
 
                     </tr>
                 </thead>
