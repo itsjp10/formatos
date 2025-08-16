@@ -53,8 +53,8 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hayFi
                 style={{ width: hayFilas ? 'calc(100% - 40px)' : '100%' }}>
                 {/* Título y datos superiores */}
                 <div className="p-2">
-                    <h1 className='text-[24px] font-bold'>{tipoFormato}</h1>
-                    <div className="flex justify-between text-xs w-full mt-1 font-semibold">
+                    <h1 className='text-[18px] font-bold leading-tight'>{tipoFormato}</h1>
+                    <div className="flex justify-between text-[11px] w-full mt-1 font-semibold">
                         <div className="flex-1 text-left">
                             <span>COD. {titulos.cod}</span>
                         </div>
@@ -68,7 +68,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hayFi
                 </div>
 
                 {/* Campos tipo formulario */}
-                <div className="grid grid-cols-4 border-t border-b border-black text-xs">
+                <div className="grid grid-cols-4 border-t border-b border-black text-[11px]">
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">OBRA:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
@@ -90,7 +90,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hayFi
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 border-b border-black text-xs">
+                <div className="grid grid-cols-4 border-b border-black text-[11px]">
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">TORRE:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
@@ -111,7 +111,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hayFi
                     </div>
                 </div>
 
-                <div className="grid grid-cols-4 text-xs">
+                <div className="grid grid-cols-4 text-[11px]">
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">ELABORADO POR:</div>
                     <div className="col-span-1 border-r border-black">
                         <input
