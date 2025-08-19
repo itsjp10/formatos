@@ -46,6 +46,7 @@ export default async function PrintFormatoPage({ params }) {
     }
 
     return (
+
         <div className="w-full">
             {filaPages.map((pageRows, pageIdx) => (
                 <div key={pageIdx} className="break-after-page mb-8">
@@ -161,7 +162,7 @@ export default async function PrintFormatoPage({ params }) {
                                                                 className="border px-2 py-1 text-center align-top relative"
                                                             >
                                                                 <textarea
-                                                                readOnly
+                                                                    readOnly
                                                                     value={row[`${header.label}-${key}-0`] || ''}
                                                                     className="w-full h-full min-h-[60px] border-none outline-none resize-none"
                                                                 />
@@ -288,6 +289,21 @@ export default async function PrintFormatoPage({ params }) {
                     </div>
                 </div>
             ))}
+            <style
+                media="print"
+                // usamos dangerouslySetInnerHTML para evitar que Next lo trate como styled-jsx
+                dangerouslySetInnerHTML={{
+                    __html: `
+      thead { display: table-header-group !important; }
+      tfoot { display: table-footer-group !important; }
+      .fila-group { break-inside: avoid; page-break-inside: avoid; }
+      tr { break-inside: avoid; page-break-inside: avoid; }
+      table { page-break-inside: auto; }
+      .page { break-after: page; page-break-after: always; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    `
+                }}
+            />
         </div>
     );
 }
