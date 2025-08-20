@@ -36,7 +36,6 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hoja 
                     </div>
                 </div>
 
-                {/* ERROR HERE FOR PRINT */}
                 <div className={`grid ${hoja ? "grid-cols-4" : "grid-cols-3"} border-t border-b border-black text-[11px]`}>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">
                         OBRA:<div className="ml-1">{titulos.obra || ''}</div>
@@ -49,21 +48,20 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hoja 
                             HOJA:<div className="ml-1">1</div>
                         </div>
                     )}
-                    <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">
+                    <div className="col-span-1 border-black flex items-center p-1 font-semibold">
                         ELABORADO POR:<div className="ml-1">{titulos.elaboradoPor || ''}</div>
                     </div>
                     
                 </div>
 
-                <div className="grid grid-cols-3 border-b border-black text-[11px]">
-                    {/* ERROR HERE FOR PRINT */}
+                <div className="grid grid-cols-3 border-black text-[11px]">
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">
                         TORRE:<div className="ml-1">{titulos.torre || ''}</div>
                     </div>
                     <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">
                         CONTRATISTA:<div className="ml-1">{titulos.contratista || ''}</div>
                     </div>
-                    <div className="col-span-1 border-r border-black flex items-center p-1 font-semibold">
+                    <div className="col-span-1 border-black flex items-center p-1 font-semibold">
                         RESIDENTE DE OBRA:<div className="ml-1">{titulos.residenteObra || ''}</div>
                     </div>
                 </div>
