@@ -1,12 +1,11 @@
-export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hayFilas, hoja }) {
+export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hoja }) {
     const titulos = contenidoFormato.titulos
     const columnas = contenidoFormato.columnas
 
     return (
         <div className="w-full relative text-sm">
             {/* Contenido visible del encabezado */}
-            <div className="border border-black"
-                style={{ width: hayFilas ? 'calc(100% - 40px)' : '100%' }}>
+            <div className="border border-black w-full">
                 {/* Título y datos superiores */}
                 <div className="p-2 relative pr-50">
                     {/* Logos a la derecha, altura completa del contenedor */}

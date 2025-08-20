@@ -38,26 +38,28 @@ export default async function PrintFormatoPage({ params }) {
     const isDateField = (label) => label === 'FECHA';
     const isSignatureField = (label) => label === 'FIRMA';
 
-    // Agrupa las filas principales en páginas de mínimo 7 filas (cada una con sus subfilas)
-    const PAGE_SIZE = 7;
-    const filaPages = [];
-    for (let i = 0; i < rows.length; i += PAGE_SIZE) {
-        filaPages.push(rows.slice(i, i + PAGE_SIZE));
-    }
 
+    const totalCols = cols.reduce((acc, col) => {
+        if (col.fixed) return acc + 1;
+        if (col.subheaders?.length) return acc + (col.subheaders.length * 2);
+        return acc + 2;
+    }, 0);
     return (
 
         <div className="w-full">
-            {/* Encabezado del formato */}
-            {titulos && (
-                <EncabezadoFormatoPDF
-                    contenidoFormato={data}
-                    tipoFormato={tipoFormato}
-                    hayFilas={false}
-                />
-            )}
             <table className="table-auto border-collapse w-full text-xs">
                 <thead>
+                    <tr>
+                        <th colSpan={totalCols} className="p-0">
+                            {/* Encabezado del formato */}
+                            {titulos && (
+                                <EncabezadoFormatoPDF
+                                    contenidoFormato={data}
+                                    tipoFormato={tipoFormato}
+                                />
+                            )}
+                        </th>
+                    </tr>
                     {/* Fila 1: labels principales */}
                     <tr>
                         {data.columnas?.map((col, colIndex) => {
