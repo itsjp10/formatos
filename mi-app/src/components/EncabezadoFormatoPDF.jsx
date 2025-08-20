@@ -22,7 +22,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hoja 
                         />
                     </div>
 
-                    <h1 className="text-[18px] font-bold leading-tight">{tipoFormato}</h1>
+                    <h1 className="text-[18px] font-bold leading-tight text-left">{tipoFormato}</h1>
 
                     <div className="flex justify-between text-[10px] w-5/6 mt-1 font-semibold">
                         <div><span>COD. {titulos.cod}</span></div>
