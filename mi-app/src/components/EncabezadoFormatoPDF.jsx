@@ -13,7 +13,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hoja 
                         <div className="flex-1 min-w-0">
                             <h1 className="text-[18px] font-bold leading-tight text-left">{tipoFormato}</h1>
 
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[10px] mt-1 font-semibold">
+                            <div className="flex flex-wrap items-center gap-x-37 gap-y-1 text-[10px] mt-1 font-semibold">
                                 <div><span>COD. {titulos.cod}</span></div>
                                 <div><span>APROBÓ: {titulos.aprobo}</span></div>
                                 <div><span>FECHA DE EMISIÓN: {titulos.fechaEmision}</span></div>
@@ -21,7 +21,7 @@ export default function EncabezadoFormato({ tipoFormato, contenidoFormato, hoja 
                         </div>
 
                         {/* Derecha: logos con flex (sin absolute/relative) */}
-                        <div className="flex shrink-0 items-center gap-6 h-10">
+                        <div className="flex shrink-0 items-center gap-15 h-10 mr-20">
                             <img
                                 className="h-full w-10 object-contain"
                                 src="/images/vive_rio_img.png"
