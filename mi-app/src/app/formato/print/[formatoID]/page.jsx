@@ -230,63 +230,69 @@ export default async function PrintFormatoPage({ params }) {
                         })
                     )}
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colSpan={totalCols} className="p-0">
+                            <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
+                                {/* CONTRATISTA */}
+                                <div className="flex flex-col items-center w-1/3">
+                                    <div className="h-20 mb-2 flex items-center justify-center">
+                                        <div>
+                                            {isFirmado.contratista ? (
+                                                <img
+                                                    src={firmas.firmaContra}
+                                                    alt={`Firma contratista`}
+                                                    className="h-full object-contain"
+                                                />
+                                            ) : null}
+                                        </div>
+                                    </div>
+
+                                    <div className="w-48 border-t-2 border-black mb-1"></div>
+                                    <span className="text-sm font-semibold text-center">CONTRATISTA</span>
+                                </div>
+
+                                {/* RESIDENTE DE TORRE */}
+                                <div className="flex flex-col items-center w-1/3">
+                                    <div className="h-20 mb-2 flex items-center justify-center">
+                                        <div>
+                                            {isFirmado.residente ? (
+                                                <img
+                                                    src={firmas.firmaRes}
+                                                    alt={`Firma residente`}
+                                                    className="h-full object-contain"
+                                                />
+                                            ) : null}
+                                        </div>
+                                    </div>
+
+                                    <div className="w-48 border-t-2 border-black mb-1"></div>
+                                    <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
+                                </div>
+
+                                {/* SUPERVISIÓN TÉCNICA */}
+                                <div className="flex flex-col items-center w-1/3">
+                                    <div className="h-20 mb-2 flex items-center justify-center">
+                                        <div>
+                                            {isFirmado.supervisor ? (
+                                                <img
+                                                    src={firmas.firmaSup}
+                                                    alt={`Firma sup`}
+                                                    className="h-full object-contain"
+                                                />
+                                            ) : null}
+                                        </div>
+                                    </div>
+
+                                    <div className="w-48 border-t-2 border-black mb-1"></div>
+                                    <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
-            <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
-                {/* CONTRATISTA */}
 
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
-                            {isFirmado.contratista ? (
-                                <img
-                                    src={firmas.firmaContra}
-                                    alt={`Firma contratista`}
-                                    className="h-full object-contain"
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-
-                    <div className="w-48 border-t-2 border-black mb-1"></div>
-                    <span className="text-sm font-semibold text-center">CONTRATISTA</span>
-                </div>
-
-                {/* RESIDENTE DE TORRE */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
-                            {isFirmado.residente ? (
-                                <img
-                                    src={firmas.firmaRes}
-                                    alt={`Firma residente`}
-                                    className="h-full object-contain"
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-
-                    <div className="w-48 border-t-2 border-black mb-1"></div>
-                    <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
-                </div>
-
-                {/* SUPERVISIÓN TÉCNICA */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
-                            {isFirmado.supervisor ? (
-                                <img
-                                    src={firmas.firmaSup}
-                                    alt={`Firma sup`}
-                                    className="h-full object-contain"
-                                />
-                            ) : null}
-                        </div>
-                    </div>
-
-                    <div className="w-48 border-t-2 border-black mb-1"></div>
-                    <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
-                </div>
-            </div>
 
             <style
                 media="print"
