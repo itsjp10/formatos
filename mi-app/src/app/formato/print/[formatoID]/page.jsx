@@ -68,7 +68,7 @@ export default async function PrintFormatoPage({ params }) {
                                     <th
                                         key={colIndex}
                                         rowSpan={3}
-                                        className="bg-gray-200 border px-2 py-1 text-center align-middle"
+                                        className="bg-gray-200 border px-2 text-center align-middle"
                                     >
                                         {col.label}
                                     </th>
@@ -78,7 +78,7 @@ export default async function PrintFormatoPage({ params }) {
                                     <th
                                         key={colIndex}
                                         colSpan={col.subheaders.length * 2}
-                                        className="bg-gray-200 border px-2 py-1 text-center"
+                                        className="bg-gray-200 border px-2 text-center"
                                     >
                                         {col.label}
                                     </th>
@@ -89,7 +89,7 @@ export default async function PrintFormatoPage({ params }) {
                                         key={colIndex}
                                         colSpan={2}
                                         rowSpan={2}
-                                        className="bg-gray-200 border px-2 py-1 text-center align-middle"
+                                        className="bg-gray-200 border px-2 text-center align-middle"
                                     >
                                         {col.label}
                                     </th>
@@ -108,7 +108,7 @@ export default async function PrintFormatoPage({ params }) {
                                     <th
                                         key={`${colIndex}-${subIndex}`}
                                         colSpan={2}
-                                        className="bg-gray-200 border px-2 py-1 text-center"
+                                        className="bg-gray-200 border px-2 text-center"
                                     >
                                         {sub}
                                     </th>
@@ -127,16 +127,16 @@ export default async function PrintFormatoPage({ params }) {
                             if (col.subheaders && col.subheaders.length > 0) {
                                 return col.subheaders.map((_, subIndex) => (
                                     <React.Fragment key={`${colIndex}-nc-${subIndex}`}>
-                                        <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
-                                        <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
+                                        <th className="bg-gray-200 border px-2 text-center">C</th>
+                                        <th className="bg-gray-300 border px-2 text-center">NC</th>
                                     </React.Fragment>
                                 ));
                             } else {
                                 // columna sin subheaders (no fija)
                                 return (
                                     <React.Fragment key={`${colIndex}-nocols`}>
-                                        <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
-                                        <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
+                                        <th className="bg-gray-200 border px-2 text-center">C</th>
+                                        <th className="bg-gray-300 border px-2 text-center">NC</th>
                                     </React.Fragment>
                                 );
                             }
