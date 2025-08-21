@@ -43,7 +43,7 @@ export default async function PrintFormatoPage({ params }) {
         if (col.fixed) return acc + 1;
         if (col.subheaders?.length) return acc + (col.subheaders.length * 2);
         return acc + 2;
-    }, 0);
+    }, 0);    
     return (
 
         <div className="w-full">
@@ -192,15 +192,15 @@ export default async function PrintFormatoPage({ params }) {
                                                 return (
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
-                                                        className="border text-center h-[40px]"
+                                                        className="border text-center"
                                                         style={{ width: 100, minWidth: 100 }}
                                                     >
                                                         {row[fullKey] ? (
-                                                            <div className="relative h-10 flex items-center justify-center">
+                                                            <div className="relative flex items-center justify-center leading-none">
                                                                 <img
                                                                     src={row[fullKey]}
                                                                     alt="Firma"
-                                                                    className="inset-0 mx-auto my-auto object-contain max-w-[90px] max-h-[36px] pointer-events-none"
+                                                                    className="block object-contain max-w-[90px] max-h-[18px] pointer-events-none"
                                                                 />
                                                             </div>
                                                         ) : null}
@@ -212,13 +212,13 @@ export default async function PrintFormatoPage({ params }) {
                                             return [
                                                 <td
                                                     key={`c-${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center cursor-pointer w-7"
+                                                    className="border px-2 text-center cursor-pointer w-7"
                                                 >
                                                     {row[fullKey] === 'C' ? '✔' : ''}
                                                 </td>,
                                                 <td
                                                     key={`nc-${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center cursor-pointer w-7 bg-gray-300"
+                                                    className="border px-2 text-center cursor-pointer w-7 bg-gray-300"
                                                 >
                                                     {row[fullKey] === 'NC' ? '✘' : ''}
                                                 </td>
