@@ -43,7 +43,7 @@ export default async function PrintFormatoPage({ params }) {
         if (col.fixed) return acc + 1;
         if (col.subheaders?.length) return acc + (col.subheaders.length * 2);
         return acc + 2;
-    }, 0);    
+    }, 0);
     return (
 
         <div className="w-full">
@@ -177,6 +177,7 @@ export default async function PrintFormatoPage({ params }) {
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
                                                         className="border px-2 py-1 text-center"
+                                                        style={{ width: 95, minWidth: 95 }}
                                                     >
                                                         <input
                                                             readOnly
@@ -193,14 +194,14 @@ export default async function PrintFormatoPage({ params }) {
                                                     <td
                                                         key={`${hIndex}-${kIndex}`}
                                                         className="border text-center"
-                                                        style={{ width: 100, minWidth: 100 }}
+                                                        style={{ width: 60, minWidth: 60 }}
                                                     >
                                                         {row[fullKey] ? (
                                                             <div className="relative flex items-center justify-center leading-none">
                                                                 <img
                                                                     src={row[fullKey]}
                                                                     alt="Firma"
-                                                                    className="block object-contain max-w-[90px] max-h-[18px] pointer-events-none"
+                                                                    className="block object-contain max-w-[60px] max-h-[18px] pointer-events-none"
                                                                 />
                                                             </div>
                                                         ) : null}
@@ -233,64 +234,65 @@ export default async function PrintFormatoPage({ params }) {
                 <tfoot>
                     <tr>
                         <td colSpan={totalCols} className="p-0">
-                            <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
+                            <div className="flex w-full justify-between items-start px-2 max-w-2xl mx-auto mt-4">
                                 {/* CONTRATISTA */}
                                 <div className="flex flex-col items-center w-1/3">
-                                    <div className="h-20 mb-2 flex items-center justify-center">
+                                    <div className="h-12 mb-1 flex items-center justify-center">
                                         <div>
                                             {isFirmado.contratista ? (
                                                 <img
                                                     src={firmas.firmaContra}
-                                                    alt={`Firma contratista`}
+                                                    alt="Firma contratista"
                                                     className="h-full object-contain"
                                                 />
                                             ) : null}
                                         </div>
                                     </div>
 
-                                    <div className="w-48 border-t-2 border-black mb-1"></div>
-                                    <span className="text-sm font-semibold text-center">CONTRATISTA</span>
+                                    <div className="w-32 border-t border-black mb-1"></div>
+                                    <span className="text-xs font-medium text-center">CONTRATISTA</span>
                                 </div>
 
                                 {/* RESIDENTE DE TORRE */}
                                 <div className="flex flex-col items-center w-1/3">
-                                    <div className="h-20 mb-2 flex items-center justify-center">
+                                    <div className="h-12 mb-1 flex items-center justify-center">
                                         <div>
                                             {isFirmado.residente ? (
                                                 <img
                                                     src={firmas.firmaRes}
-                                                    alt={`Firma residente`}
+                                                    alt="Firma residente"
                                                     className="h-full object-contain"
                                                 />
                                             ) : null}
                                         </div>
                                     </div>
 
-                                    <div className="w-48 border-t-2 border-black mb-1"></div>
-                                    <span className="text-sm font-semibold text-center">RESIDENTE DE TORRE</span>
+                                    <div className="w-32 border-t border-black mb-1"></div>
+                                    <span className="text-xs font-medium text-center">RESIDENTE DE TORRE</span>
                                 </div>
 
                                 {/* SUPERVISIÓN TÉCNICA */}
                                 <div className="flex flex-col items-center w-1/3">
-                                    <div className="h-20 mb-2 flex items-center justify-center">
+                                    <div className="h-12 mb-1 flex items-center justify-center">
                                         <div>
                                             {isFirmado.supervisor ? (
                                                 <img
                                                     src={firmas.firmaSup}
-                                                    alt={`Firma sup`}
+                                                    alt="Firma sup"
                                                     className="h-full object-contain"
                                                 />
                                             ) : null}
                                         </div>
                                     </div>
 
-                                    <div className="w-48 border-t-2 border-black mb-1"></div>
-                                    <span className="text-sm font-semibold text-center">SUPERVISIÓN TÉCNICA</span>
+                                    <div className="w-32 border-t border-black mb-1"></div>
+                                    <span className="text-xs font-medium text-center">SUPERVISIÓN TÉCNICA</span>
                                 </div>
                             </div>
                         </td>
                     </tr>
                 </tfoot>
+
             </table>
 
 

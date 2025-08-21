@@ -39,7 +39,7 @@ export async function GET(req, ctx) {
       format: 'A4',
       landscape: true,
       printBackground: true,
-      margin: { top: '12mm', right: '12mm', bottom: '16mm', left: '12mm' },
+      margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
       // preferCSSPageSize: true, // si defines @page en CSS
     });
 
