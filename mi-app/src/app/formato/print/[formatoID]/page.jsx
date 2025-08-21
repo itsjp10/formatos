@@ -48,9 +48,9 @@ export default async function PrintFormatoPage({ params }) {
 
         <div className="w-full">
             <table className="table-auto border-collapse w-full text-xs">
-                <thead>
+                <thead className="p-0">
                     <tr>
-                        <th colSpan={totalCols} className="p-0">
+                        <th colSpan={totalCols} className="p-0 border-0">
                             {/* Encabezado del formato */}
                             {titulos && (
                                 <EncabezadoFormatoPDF
