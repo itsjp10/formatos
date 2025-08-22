@@ -278,7 +278,7 @@ function Dashboard({ logout }) {
 
             // Guardar en la base de datos
             const firmaPayload = {
-                tipo: "residente",
+                tipo: usuario.role,
                 imagenUrl: imageUrl,
                 usuarioId: usuario.userID,
                 formatoId: null,

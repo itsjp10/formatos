@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function DELETE(req, { params }) {
-  const { firmaID } = params;
+  const { firmaID } = await params;
 
   try {
     const firmaEliminada = await prisma.firma.delete({
