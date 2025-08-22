@@ -17,6 +17,15 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
         firmas: {}
     });
 
+    const [showNoFirma, setShowNoFirma] = useState(false);
+
+    const ensureFirmaOrWarn = () => {
+        const ok = !!(firma && firma.imagenUrl);
+        if (!ok) setShowNoFirma(true);
+        return ok;
+    };
+
+
     // referencia para evitar bucles infinitos
     const isRemoteUpdate = useRef(false);
 
@@ -313,6 +322,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                                 type="button"
                                                                 className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
                                                                 onClick={() => {
+                                                                    if (!ensureFirmaOrWarn()) return;
                                                                     const updated = [...rows];
                                                                     updated[rowIndex][fullKey] = firma.imagenUrl;
 
@@ -369,7 +379,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                             {isFirmado.contratista ? (
                                 <img
                                     src={firmas.firmaContra}
-                                    alt={`Firma ${firma.firmaID}`}
+                                    alt="Firma contratista"
                                     className="h-full object-contain"
                                 />
                             ) : rol === "contratista" ? (
@@ -377,6 +387,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
                                     onClick={() => {
+                                        if (!ensureFirmaOrWarn()) return;
                                         setIsFirmado(prev => ({ ...prev, contratista: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -436,7 +447,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                             {isFirmado.residente ? (
                                 <img
                                     src={firmas.firmaRes}
-                                    alt={`Firma ${firma.firmaID}`}
+                                    alt="Firma residente"
                                     className="h-full object-contain"
                                 />
                             ) : rol === "residente" ? (
@@ -444,6 +455,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
                                     onClick={() => {
+                                        if (!ensureFirmaOrWarn()) return;
                                         setIsFirmado(prev => ({ ...prev, residente: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -503,7 +515,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}
-                                    alt={`Firma ${firma.firmaID}`}
+                                    alt="Firma supervisión"
                                     className="h-full object-contain"
                                 />
                             ) : rol === "supervisor" ? (
@@ -511,6 +523,7 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                     type="button"
                                     className="px-4 py-2 border-2 border-dashed border-gray-400 rounded-md text-sm text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 flex items-center gap-2 font-semibold"
                                     onClick={() => {
+                                        if (!ensureFirmaOrWarn()) return;
                                         setIsFirmado(prev => ({ ...prev, supervisor: true }));
                                         const nuevasFirmas = {
                                             ...firmas,
@@ -563,7 +576,24 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                     )}
                 </div>
             </div>
-
+            {showNoFirma && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+                    <div className="bg-white rounded-xl shadow-xl p-5 w-[90%] max-w-sm">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-2">No hay firma creada</h2>
+                        <p className="text-sm text-gray-700 mb-4">
+                            Debes crear una firma primero para poder firmar este formato.
+                        </p>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800"
+                                onClick={() => setShowNoFirma(false)}
+                            >
+                                Entendido
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
