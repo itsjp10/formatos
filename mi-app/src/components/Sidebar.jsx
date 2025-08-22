@@ -161,188 +161,15 @@ export function SidebarItem({
   }
 
   if (tipo === "formatoItem" && expanded) {
-    const [showMenu, setShowMenu] = useState(false)
-    const [isEditing, setIsEditing] = useState(false)
-    const [nombreEditado, setNombreEditado] = useState(text)
-    const inputRef = useRef(null)
-    const menuRef = useRef()
-    const triggerRef = useRef(null)
-
-    const [pos, setPos] = useState({ top: 0, left: 0 })
-
-    const canEdit = !!onRenombrar && editar === true
-
-    useEffect(() => {
-      setNombreEditado(text)
-    }, [text])
-
-    useEffect(() => {
-      if (!showMenu) return
-      const updatePos = () => {
-        const rect = triggerRef.current?.getBoundingClientRect()
-        if (!rect) return
-        const gap = 8
-        const menuW = 176 // w-44
-        let top = rect.bottom + gap
-        let left = rect.right - menuW
-        left = Math.min(Math.max(8, left), window.innerWidth - menuW - 8)
-        setPos({ top, left })
-      }
-      updatePos()
-      // usa capture=true para detectar scrolls en contenedores con overflow
-      window.addEventListener("scroll", updatePos, true)
-      window.addEventListener("resize", updatePos)
-      return () => {
-        window.removeEventListener("scroll", updatePos, true)
-        window.removeEventListener("resize", updatePos)
-      }
-    }, [showMenu])
-
-
-
-    useEffect(() => {
-      if (!showMenu) return
-      const handleClickOutside = (e) => {
-        const t = e.target
-        if (menuRef.current && menuRef.current.contains(t)) return
-        if (triggerRef.current && triggerRef.current.contains(t)) return
-        setShowMenu(false)
-      }
-      const handleEsc = (e) => {
-        if (e.key === "Escape") setShowMenu(false)
-      }
-      document.addEventListener("mousedown", handleClickOutside)
-      document.addEventListener("keydown", handleEsc)
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside)
-        document.removeEventListener("keydown", handleEsc)
-      }
-    }, [showMenu])
-
-    useEffect(() => {
-      if (!showMenu) return
-      const updatePos = () => {
-        const rect = triggerRef.current?.getBoundingClientRect()
-        if (!rect) return
-        const gap = 8
-        const menuW = 176 // w-44
-        let top = rect.bottom + gap
-        let left = rect.right - menuW
-        left = Math.min(Math.max(8, left), window.innerWidth - menuW - 8)
-        setPos({ top, left })
-      }
-      updatePos()
-      window.addEventListener("scroll", updatePos, { passive: true, capture: true })
-      window.addEventListener("resize", updatePos)
-      return () => {
-        window.removeEventListener("scroll", updatePos, { capture: true })
-        window.removeEventListener("resize", updatePos)
-      }
-    }, [showMenu])
-
-    const finalizarEdicion = () => {
-      if (!isEditing) return
-      setIsEditing(false)
-      const nuevo = nombreEditado.trim()
-      if (nuevo && nuevo !== text) {
-        setNombreEditado(nuevo)
-        onRenombrar?.(formatoID, nuevo)
-      }
-    }
-
-    //Esto se hace para que al dar click se seleccione el input de formato para editar
-    useEffect(() => {
-      if (!isEditing) return
-      // Espera al paint para asegurar que el <input> ya está en el DOM
-      requestAnimationFrame(() => {
-        if (inputRef.current) {
-          inputRef.current.focus()
-          inputRef.current.select()
-        }
-      })
-    }, [isEditing])
-
     return (
-      <li
-        className={`
-          relative group/item flex items-center justify-between py-2 px-3 my-1 h-10
-          font-medium rounded-md cursor-pointer transition-colors
-          text-black font-inter
-          ${active ? "bg-gradient-to-tr from-indigo-200 to-indigo-100" : "hover:bg-indigo-50"}
-        `}
+      <SidebarFormatoItem
+        text={text}
+        active={active}
         onClick={(e) => handleNavigate(e, onClick)}
-      >
-        <span className="overflow-hidden text-black font-inter w-52 truncate group-hover/item:w-35 text-sm">
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              value={nombreEditado}
-              onChange={(e) => setNombreEditado(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") finalizarEdicion()
-              }}
-              onBlur={finalizarEdicion}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full bg-transparent px-0 py-0 text-sm focus:outline-none"
-            />
-          ) : (
-            nombreEditado
-          )}
-        </span>
-
-        <button
-          ref={triggerRef}
-          className="relative z-10 p-1"
-          onClick={(e) => {
-            e.stopPropagation()
-            setShowMenu((p) => !p)
-          }}
-          aria-haspopup="menu"
-          aria-expanded={showMenu}
-        >
-          <MoreHorizontal className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 hover:cursor-pointer" />
-        </button>
-
-        {showMenu && (
-          <Portal>
-            <div
-              ref={menuRef}
-              role="menu"
-              className="fixed z-[1000] w-44 bg-white border border-gray-200 rounded-lg shadow-lg"
-              style={{ top: pos.top, left: pos.left }}
-            >
-              {canEdit && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowMenu(false)
-                    setIsEditing(true)
-                  }}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
-                >
-                  <Pencil size={16} />
-                  Cambiar nombre
-                </button>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowMenu(false)
-                  setTimeout(() => {
-                    window.dispatchEvent(
-                      new CustomEvent("solicitar-eliminacion-formato", { detail: formatoID })
-                    )
-                  }, 0)
-                }}
-                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 font-semibold"
-              >
-                <Trash size={16} />
-                Eliminar
-              </button>
-            </div>
-          </Portal>
-        )}
-      </li>
+        formatoID={formatoID}
+        onRenombrar={onRenombrar}
+        editar={editar}
+      />
     )
   }
 
@@ -392,6 +219,169 @@ export function SidebarItem({
         >
           {text}
         </div>
+      )}
+    </li>
+  )
+}
+
+
+function SidebarFormatoItem({ text, active, onClick, formatoID, onRenombrar, editar = true }) {
+  const { expanded } = useContext(SidebarContext)
+  const [showMenu, setShowMenu] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [nombreEditado, setNombreEditado] = useState(text)
+  const inputRef = useRef(null)
+  const menuRef = useRef()
+  const triggerRef = useRef(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+
+  const canEdit = !!onRenombrar && editar === true
+
+  useEffect(() => {
+    setNombreEditado(text)
+  }, [text])
+
+  // Posición del menú
+  useEffect(() => {
+    if (!showMenu) return
+    const updatePos = () => {
+      const rect = triggerRef.current?.getBoundingClientRect()
+      if (!rect) return
+      const gap = 8
+      const menuW = 176
+      let top = rect.bottom + gap
+      let left = rect.right - menuW
+      left = Math.min(Math.max(8, left), window.innerWidth - menuW - 8)
+      setPos({ top, left })
+    }
+    updatePos()
+    window.addEventListener("scroll", updatePos, true)
+    window.addEventListener("resize", updatePos)
+    return () => {
+      window.removeEventListener("scroll", updatePos, true)
+      window.removeEventListener("resize", updatePos)
+    }
+  }, [showMenu])
+
+  // Cerrar al hacer click fuera / ESC
+  useEffect(() => {
+    if (!showMenu) return
+    const handleClickOutside = (e) => {
+      const t = e.target
+      if (menuRef.current && menuRef.current.contains(t)) return
+      if (triggerRef.current && triggerRef.current.contains(t)) return
+      setShowMenu(false)
+    }
+    const handleEsc = (e) => {
+      if (e.key === "Escape") setShowMenu(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleEsc)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEsc)
+    }
+  }, [showMenu])
+
+  // Focus al empezar edición
+  useEffect(() => {
+    if (!isEditing) return
+    requestAnimationFrame(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    })
+  }, [isEditing])
+
+  const finalizarEdicion = () => {
+    if (!isEditing) return
+    setIsEditing(false)
+    const nuevo = nombreEditado.trim()
+    if (nuevo && nuevo !== text) {
+      setNombreEditado(nuevo)
+      onRenombrar?.(formatoID, nuevo)
+    }
+  }
+
+  // Si no está expandido, no mostramos este layout (defensivo)
+  if (!expanded) return null
+
+  return (
+    <li
+      className={`
+        relative group/item flex items-center justify-between py-2 px-3 my-1 h-10
+        font-medium rounded-md cursor-pointer transition-colors
+        text-black font-inter
+        ${active ? "bg-gradient-to-tr from-indigo-200 to-indigo-100" : "hover:bg-indigo-50"}
+      `}
+      onClick={onClick}
+    >
+      <span className="overflow-hidden text-black font-inter w-52 truncate group-hover/item:w-35 text-sm">
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            value={nombreEditado}
+            onChange={(e) => setNombreEditado(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && finalizarEdicion()}
+            onBlur={finalizarEdicion}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-transparent px-0 py-0 text-sm focus:outline-none"
+          />
+        ) : (
+          nombreEditado
+        )}
+      </span>
+
+      <button
+        ref={triggerRef}
+        className="relative z-10 p-1"
+        onClick={(e) => {
+          e.stopPropagation()
+          setShowMenu((p) => !p)
+        }}
+        aria-haspopup="menu"
+        aria-expanded={showMenu}
+      >
+        <MoreHorizontal className="w-4 h-4 text-gray-500 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 hover:cursor-pointer" />
+      </button>
+
+      {showMenu && (
+        <Portal>
+          <div
+            ref={menuRef}
+            role="menu"
+            className="fixed z-[1000] w-44 bg-white border border-gray-200 rounded-lg shadow-lg"
+            style={{ top: pos.top, left: pos.left }}
+          >
+            {canEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowMenu(false)
+                  setIsEditing(true)
+                }}
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
+              >
+                <Pencil size={16} />
+                Cambiar nombre
+              </button>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowMenu(false)
+                setTimeout(() => {
+                  window.dispatchEvent(
+                    new CustomEvent("solicitar-eliminacion-formato", { detail: formatoID })
+                  )
+                }, 0)
+              }}
+              className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 font-semibold"
+            >
+              <Trash size={16} />
+              Eliminar
+            </button>
+          </div>
+        </Portal>
       )}
     </li>
   )

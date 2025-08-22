@@ -365,13 +365,18 @@ function Dashboard({ logout }) {
                 }
                 const signatures = await res.json()
                 setFirmas(signatures)
+                if (signatures.length > 0 && !selectedFirma) {
+                    const primera = signatures[0].firmaID;
+                    setSelectedFirma(primera);
+                    localStorage.setItem('selectedFirmaId', primera);
+                }
             } catch (err) {
                 setError(err.message)
             }
         }
 
         fetchFirmas()
-    }, [usuario])
+    }, [usuario, selectedFirma])
 
     useEffect(() => {
         const fetchTipoFormatos = async () => {
