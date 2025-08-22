@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Copy, Trash2, MoreHorizontal } from 'lucide-react';
+import { Trash2, MoreHorizontal } from 'lucide-react';
 
 function Firma({ firma, onDelete, onSelect, selected }) {
     const fechaFormateada = new Date(firma.createdAt).toLocaleDateString('es-CO', {
@@ -29,7 +29,8 @@ function Firma({ firma, onDelete, onSelect, selected }) {
         };
     }, [menuAbierto]);
 
-    const handleEliminar = () => {
+    const handleEliminar = (e) => {
+        e.stopPropagation();
         setMenuAbierto(false);
         if (confirm('¿Estás seguro de eliminar esta firma?')) {
             onDelete?.(firma.firmaID);
@@ -55,7 +56,7 @@ function Firma({ firma, onDelete, onSelect, selected }) {
             </div>
 
             {/* Botón de menú */}
-            <div className="relative" ref={menuRef}>
+            <div className="relative" ref={menuRef} onClick={(e) => e.stopPropagation()}>
                 <button
                     onClick={(e) => {
                         e.stopPropagation();

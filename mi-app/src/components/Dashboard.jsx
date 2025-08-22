@@ -302,6 +302,11 @@ function Dashboard({ logout }) {
                 throw new Error(errorMsg);
             }
             const nuevaFirma = await dbRes.json();
+            const savedId = localStorage.getItem('selectedFirmaId');
+            if (!selectedFirma || !savedId) {
+                setSelectedFirma(nuevaFirma.firmaID);
+                localStorage.setItem('selectedFirmaId', nuevaFirma.firmaID);
+            }
             setFirmas(prev => [nuevaFirma, ...prev]);
 
             alert('Firma guardada con éxito');
@@ -321,7 +326,23 @@ function Dashboard({ logout }) {
             }
 
             // Elimina la firma del estado local
-            setFirmas((prevFirmas) => prevFirmas.filter((firma) => firma.firmaID !== firmaID));
+            setFirmas((prevFirmas) => {
+                const nuevas = prevFirmas.filter((f) => f.firmaID !== firmaID);
+
+                if (selectedFirma === firmaID) {
+                    // Limpia selección
+                    localStorage.removeItem('selectedFirmaId');
+                    setSelectedFirma(null);
+
+                    // Selecciona la primera disponible si existe
+                    if (nuevas.length > 0) {
+                        setSelectedFirma(nuevas[0].firmaID);
+                        localStorage.setItem('selectedFirmaId', nuevas[0].firmaID);
+                    }
+                }
+
+                return nuevas;
+            });
         } catch (err) {
             console.error('❌ Error al eliminar firma:', err);
             alert('No se pudo eliminar la firma. Intenta nuevamente.');
