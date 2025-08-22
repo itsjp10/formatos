@@ -302,7 +302,7 @@ function Dashboard({ logout }) {
                 throw new Error(errorMsg);
             }
             const nuevaFirma = await dbRes.json();
-            setFirmas(prev => [...prev, nuevaFirma]);
+            setFirmas(prev => [nuevaFirma, ...prev]);
 
             alert('Firma guardada con éxito');
         } catch (err) {
