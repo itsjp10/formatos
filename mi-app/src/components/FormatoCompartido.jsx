@@ -6,7 +6,6 @@ import EncabezadoFormato from './EncabezadoFormato';
 
 const socket = io("http://localhost:3001");
 
-
 function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
     //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar
     const [data, setData] = useState({
@@ -24,7 +23,6 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
         if (!ok) setShowNoFirma(true);
         return ok;
     };
-
 
     // referencia para evitar bucles infinitos
     const isRemoteUpdate = useRef(false);
@@ -136,251 +134,276 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
     const isSignatureField = (label) => label === 'FIRMA';
 
     return (
-        <div className="w-full overflow-x-auto">
+        <div className="w-full overflow-x-hidden">
+            <a
+                href={`/api/formatos/${formatoID}/pdf`}
+                download={`formato-${formatoID}.pdf`}
+                className="no-print mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1 text-sm inline-block"
+            >
+                Descargar PDF
+            </a>
+
             {/* Encabezado del formato */}
             {titulos && (
                 <EncabezadoFormato
                     contenidoFormato={data}
                     tipoFormato={tipoFormato}
                     hayFilas={false}
-                    editar={false}
+                    onTitulosChange={(titulosActualizados) => {
+                        const nuevoData = {
+                            filas: rows,
+                            columnas: headers,
+                            numSubfilas,
+                            titulos: titulosActualizados,
+                            firmas: firmas,
+                        };
+                        syncAndSave(nuevoData);
+                    }}
+                    editar={(rol == "residente") ? true : false}
                 />
             )}
 
-            <table className="table-auto border-collapse w-full text-xs">
-                <thead>
-                    {/* Fila 1: labels principales */}
-                    <tr>
-                        {data.columnas?.map((col, colIndex) => {
-                            if (col.fixed) {
+            <div className="relative overflow-auto md:px-0 max-h-[70vh] md:max-h-[53vh]">
+                <table className="table-auto border-separate border-spacing-0 w-full text-xs">
+                    <thead className="sticky top-0 z-40">
+                        {/* Fila 1: labels principales */}
+                        <tr>
+                            {data.columnas?.map((col, colIndex) => {
+                                const esAPTO = col.label === 'APTO';
+                                if (col.fixed || esAPTO) {
+                                    return (
+                                        <th
+                                            key={colIndex}
+                                            rowSpan={3}
+                                            className={`border px-2 py-1 text-center align-middle bg-gray-200 ${esAPTO
+                                                ? "sticky left-0 top-0 z-50"       // <- columna y header fijos
+                                                : "sticky top-0 z-40"              // <- headers fijos arriba
+                                                }`}
+                                        >
+                                            {col.label}
+                                        </th>
+                                    );
+                                } else if (col.subheaders && col.subheaders.length > 0) {
+                                    return (
+                                        <th
+                                            key={colIndex}
+                                            colSpan={col.subheaders.length * 2}
+                                            className="bg-gray-200 border px-2 py-1 text-center sticky top-0 z-40"
+                                        >
+                                            {col.label}
+                                        </th>
+                                    );
+                                } else {
+                                    return (
+                                        <th
+                                            key={colIndex}
+                                            colSpan={2}
+                                            rowSpan={2}
+                                            className="bg-gray-200 border px-2 py-1 text-center align-middle sticky top-0 z-40"
+                                        >
+                                            {col.label}
+                                        </th>
+                                    );
+                                }
+                            })}
+                        </tr>
+
+                        {/* Fila 2: subheaders (solo si los hay) */}
+                        <tr>
+                            {data.columnas?.map((col, colIndex) => {
+                                if (col.fixed) return null;
+
+                                if (col.subheaders && col.subheaders.length > 0) {
+                                    return col.subheaders.map((sub, subIndex) => (
+                                        <th
+                                            key={`${colIndex}-${subIndex}`}
+                                            colSpan={2}
+                                            className="bg-gray-200 border px-2 py-1 text-center"
+                                        >
+                                            {sub}
+                                        </th>
+                                    ));
+                                }
+
+                                return null;
+                            })}
+                        </tr>
+
+                        {/* Fila 3: C / NC headers */}
+                        <tr>
+                            {data.columnas?.map((col, colIndex) => {
+                                if (col.fixed) return null;
+
+                                if (col.subheaders && col.subheaders.length > 0) {
+                                    return col.subheaders.map((_, subIndex) => (
+                                        <React.Fragment key={`${colIndex}-nc-${subIndex}`}>
+                                            <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
+                                            <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
+                                        </React.Fragment>
+                                    ));
+                                } else {
+                                    // columna sin subheaders (no fija)
+                                    return (
+                                        <React.Fragment key={`${colIndex}-nocols`}>
+                                            <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
+                                            <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
+                                        </React.Fragment>
+                                    );
+                                }
+                            })}
+                        </tr>
+                    </thead>
+
+
+
+                    <tbody>
+                        {rows?.map((row, rowIndex) =>
+                            [...Array(numSubfilas)].map((_, subIndex) => {
                                 return (
-                                    <th
-                                        key={colIndex}
-                                        rowSpan={3}
-                                        className="bg-gray-200 border px-2 py-1 text-center align-middle"
-                                    >
-                                        {col.label}
-                                    </th>
-                                );
-                            } else if (col.subheaders && col.subheaders.length > 0) {
-                                return (
-                                    <th
-                                        key={colIndex}
-                                        colSpan={col.subheaders.length * 2}
-                                        className="bg-gray-200 border px-2 py-1 text-center"
-                                    >
-                                        {col.label}
-                                    </th>
-                                );
-                            } else {
-                                return (
-                                    <th
-                                        key={colIndex}
-                                        colSpan={2}
-                                        rowSpan={2}
-                                        className="bg-gray-200 border px-2 py-1 text-center align-middle"
-                                    >
-                                        {col.label}
-                                    </th>
-                                );
-                            }
-                        })}
-                    </tr>
+                                    <tr key={`${rowIndex}-${subIndex}`}>
+                                        {headers.map((header, hIndex) => {
+                                            const keys = header.subheaders?.length ? header.subheaders : [header.label];
 
-                    {/* Fila 2: subheaders (solo si los hay) */}
-                    <tr>
-                        {data.columnas?.map((col, colIndex) => {
-                            if (col.fixed) return null;
+                                            return keys.map((key, kIndex) => {
+                                                const fullKey = `${header.label}-${key}-${subIndex}`;
 
-                            if (col.subheaders && col.subheaders.length > 0) {
-                                return col.subheaders.map((sub, subIndex) => (
-                                    <th
-                                        key={`${colIndex}-${subIndex}`}
-                                        colSpan={2}
-                                        className="bg-gray-200 border px-2 py-1 text-center"
-                                    >
-                                        {sub}
-                                    </th>
-                                ));
-                            }
+                                                if (isSimpleField(header.label) && subIndex === 0) {
+                                                    const esAPTO = header.label === 'APTO'
+                                                    return (
+                                                        <td
+                                                            key={`${hIndex}-${kIndex}`}
+                                                            rowSpan={numSubfilas}
+                                                            className={`border px-2 py-1 text-center align-top relative ${esAPTO ? "min-w-20 sticky left-0 z-20 bg-white" : ""}`}
+                                                        >
+                                                            <textarea
+                                                                value={row[`${header.label}-${key}-0`] || ''}
+                                                                className="w-full h-full min-h-[60px] border-none outline-none resize-none"
+                                                                readOnly
+                                                            />
+                                                        </td>
+                                                    );
+                                                }
 
-                            return null;
-                        })}
-                    </tr>
+                                                if (isSimpleField(header.label)) return null;
 
-                    {/* Fila 3: C / NC headers */}
-                    <tr>
-                        {data.columnas?.map((col, colIndex) => {
-                            if (col.fixed) return null;
+                                                if (isDateField(header.label)) {
+                                                    return (
+                                                        <td
+                                                            key={`${hIndex}-${kIndex}`}
+                                                            className="border px-2 py-1 text-center"
+                                                        >
+                                                            <input
+                                                                type="text"
+                                                                value={row[fullKey] || ''}
+                                                                readOnly
+                                                                className="w-full min-w-[65px] border-none outline-none"
+                                                            />
+                                                        </td>
+                                                    );
+                                                }
 
-                            if (col.subheaders && col.subheaders.length > 0) {
-                                return col.subheaders.map((_, subIndex) => (
-                                    <React.Fragment key={`${colIndex}-nc-${subIndex}`}>
-                                        <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
-                                        <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
-                                    </React.Fragment>
-                                ));
-                            } else {
-                                // columna sin subheaders (no fija)
-                                return (
-                                    <React.Fragment key={`${colIndex}-nocols`}>
-                                        <th className="bg-gray-200 border px-2 py-1 text-center">C</th>
-                                        <th className="bg-gray-300 border px-2 py-1 text-center">NC</th>
-                                    </React.Fragment>
-                                );
-                            }
-                        })}
-                    </tr>
-                </thead>
+                                                if (isSignatureField(header.label)) {
+                                                    return (
+                                                        <td
+                                                            key={`${hIndex}-${kIndex}`}
+                                                            className="border text-center h-[40px]"
+                                                        >
+                                                            {row[fullKey] ? (
+                                                                <div className="relative h-10 flex items-center justify-center">
+                                                                    <img
+                                                                        src={row[fullKey]}
+                                                                        alt="Firma"
+                                                                        className="inset-0 mx-auto my-auto object-contain max-w-[90px] max-h-[36px] pointer-events-none"
+                                                                    />
+                                                                    {rol === "supervisor" && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const updated = [...rows];
+                                                                                updated[rowIndex][fullKey] = "";
+
+                                                                                const nuevoData = {
+                                                                                    filas: updated,
+                                                                                    columnas: headers,
+                                                                                    numSubfilas,
+                                                                                    titulos,
+                                                                                    firmas,
+                                                                                };
+
+                                                                                syncAndSave(nuevoData);
+                                                                            }}
+                                                                            className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
+                                                                            title="Eliminar firma"
+                                                                        >
+                                                                            <Trash2 className="w-3 h-3 text-gray-700" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ) : rol === "supervisor" ? (
+                                                                <button
+                                                                    type="button"
+                                                                    className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
+                                                                    onClick={() => {
+                                                                        if (!ensureFirmaOrWarn()) return;
+                                                                        const updated = [...rows];
+                                                                        updated[rowIndex][fullKey] = firma.imagenUrl;
+
+                                                                        const nuevoData = {
+                                                                            filas: updated,
+                                                                            columnas: headers,
+                                                                            numSubfilas,
+                                                                            titulos,
+                                                                            firmas,
+                                                                        };
+
+                                                                        syncAndSave(nuevoData);
+                                                                    }}
+                                                                >
+                                                                    <Signature className="w-3 h-3" />
+                                                                    Firmar
+                                                                </button>
+                                                            ) : null}
+                                                        </td>
+                                                    );
+                                                }
 
 
-
-                <tbody>
-                    {rows?.map((row, rowIndex) =>
-                        [...Array(numSubfilas)].map((_, subIndex) => {
-                            return (
-                                <tr key={`${rowIndex}-${subIndex}`}>
-                                    {headers.map((header, hIndex) => {
-                                        const keys = header.subheaders?.length ? header.subheaders : [header.label];
-
-                                        return keys.map((key, kIndex) => {
-                                            const fullKey = `${header.label}-${key}-${subIndex}`;
-
-                                            if (isSimpleField(header.label) && subIndex === 0) {
-                                                return (
+                                                return [
                                                     <td
-                                                        key={`${hIndex}-${kIndex}`}
-                                                        rowSpan={numSubfilas}
-                                                        className="border px-2 py-1 text-center align-top relative"
+                                                        key={`c-${hIndex}-${kIndex}`}
+                                                        className="border px-2 py-1 text-center w-7 min-w-[28px] max-w-[28px]"
                                                     >
-                                                        <textarea
-                                                            value={row[`${header.label}-${key}-0`] || ''}
-                                                            className="w-full h-full min-h-[60px] border-none outline-none resize-none "
-                                                            readOnly
-                                                        />
-                                                    </td>
-                                                );
-                                            }
-
-                                            if (isSimpleField(header.label)) return null;
-
-                                            if (isDateField(header.label)) {
-                                                return (
+                                                        {row[fullKey] === 'C' ? '✔' : ''}
+                                                    </td>,
                                                     <td
-                                                        key={`${hIndex}-${kIndex}`}
-                                                        className="border px-2 py-1 text-center"
+                                                        key={`nc-${hIndex}-${kIndex}`}
+                                                        className="border px-2 py-1 text-center w-7 min-w-[28px] max-w-[28px] bg-gray-300"
                                                     >
-                                                        <input
-                                                            type="text"
-                                                            value={row[fullKey] || ''}
-                                                            readOnly
-                                                            className="w-full border-none outline-none"
-                                                        />
+                                                        {row[fullKey] === 'NC' ? '✘' : ''}
                                                     </td>
-                                                );
-                                            }
-
-                                            if (isSignatureField(header.label)) {
-                                                return (
-                                                    <td
-                                                        key={`${hIndex}-${kIndex}`}
-                                                        className="border text-center h-[40px]"
-                                                    >
-                                                        {row[fullKey] ? (
-                                                            <div className="relative h-10 flex items-center justify-center">
-                                                                <img
-                                                                    src={row[fullKey]}
-                                                                    alt="Firma"
-                                                                    className="inset-0 mx-auto my-auto object-contain max-w-[90px] max-h-[36px] pointer-events-none"
-                                                                />
-                                                                {rol === "supervisor" && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const updated = [...rows];
-                                                                            updated[rowIndex][fullKey] = "";
-
-                                                                            const nuevoData = {
-                                                                                filas: updated,
-                                                                                columnas: headers,
-                                                                                numSubfilas,
-                                                                                titulos,
-                                                                                firmas,
-                                                                            };
-
-                                                                            syncAndSave(nuevoData);
-                                                                        }}
-                                                                        className="absolute top-0 right-0 p-1 bg-white hover:bg-gray-100 rounded-full shadow-sm"
-                                                                        title="Eliminar firma"
-                                                                    >
-                                                                        <Trash2 className="w-3 h-3 text-gray-700" />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        ) : rol === "supervisor" ? (
-                                                            <button
-                                                                type="button"
-                                                                className="px-2 py-1 border border-dashed border-gray-400 rounded text-xs text-gray-700 hover:bg-gray-100 transition-all flex items-center gap-1 mx-auto"
-                                                                onClick={() => {
-                                                                    if (!ensureFirmaOrWarn()) return;
-                                                                    const updated = [...rows];
-                                                                    updated[rowIndex][fullKey] = firma.imagenUrl;
-
-                                                                    const nuevoData = {
-                                                                        filas: updated,
-                                                                        columnas: headers,
-                                                                        numSubfilas,
-                                                                        titulos,
-                                                                        firmas,
-                                                                    };
-
-                                                                    syncAndSave(nuevoData);
-                                                                }}
-                                                            >
-                                                                <Signature className="w-3 h-3" />
-                                                                Firmar
-                                                            </button>
-                                                        ) : null}
-                                                    </td>
-                                                );
-                                            }
+                                                ];
+                                            });
+                                        })}
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
 
 
-                                            return [
-                                                <td
-                                                    key={`c-${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center w-7"
-                                                >
-                                                    {row[fullKey] === 'C' ? '✔' : ''}
-                                                </td>,
-                                                <td
-                                                    key={`nc-${hIndex}-${kIndex}`}
-                                                    className="border px-2 py-1 text-center w-7 bg-gray-300"
-                                                >
-                                                    {row[fullKey] === 'NC' ? '✘' : ''}
-                                                </td>
-                                            ];
-                                        });
-                                    })}
-                                </tr>
-                            );
-                        })
-                    )}
-                </tbody>
-
-
-            </table>
-            <div className="flex w-full justify-between items-start px-4 max-w-4xl mx-auto mt-8">
+                </table>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4 max-w-5xl mx-auto mt-5 mb-10 sm:mb-0">
                 {/* CONTRATISTA */}
 
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
+                <div className="min-w-0 flex flex-col items-center">
+                    <div className="h-20 mb-2 flex items-center justify-center w-full">
+                        <div className="max-w-full">
                             {isFirmado.contratista ? (
                                 <img
                                     src={firmas.firmaContra}
                                     alt="Firma contratista"
-                                    className="h-full object-contain"
+                                    className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "contratista" ? (
                                 <button
@@ -441,14 +464,14 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                 </div>
 
                 {/* RESIDENTE DE TORRE */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
+                <div className="min-w-0 flex flex-col items-center">
+                    <div className="h-20 mb-2 flex items-center justify-center w-full">
+                        <div className="max-w-full">
                             {isFirmado.residente ? (
                                 <img
                                     src={firmas.firmaRes}
                                     alt="Firma residente"
-                                    className="h-full object-contain"
+                                    className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "residente" ? (
                                 <button
@@ -509,14 +532,14 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                 </div>
 
                 {/* SUPERVISIÓN TÉCNICA */}
-                <div className="flex flex-col items-center w-1/3">
-                    <div className="h-20 mb-2 flex items-center justify-center">
-                        <div>
+                <div className="min-w-0 flex flex-col items-center">
+                    <div className="h-20 mb-2 flex items-center justify-center w-full">
+                        <div className="max-w-full">
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}
                                     alt="Firma supervisión"
-                                    className="h-full object-contain"
+                                    className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "supervisor" ? (
                                 <button

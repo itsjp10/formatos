@@ -251,7 +251,6 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                 <table className="table-auto border-separate border-spacing-0 w-full text-xs">
                     <thead className="sticky top-0 z-40">
                         {/* Fila 1: labels principales */}
-                        {/* Fila 1: labels principales */}
                         <tr>
                             {data.columnas?.map((col, colIndex) => {
                                 const esAPTO = col.label === 'APTO';
@@ -385,7 +384,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                                                                 type="text"
                                                                 value={row[fullKey] || ''}
                                                                 onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
-                                                                className="w-full border-none outline-none"
+                                                                className="w-full min-w-[65px] border-none outline-none"
                                                             />
                                                         </td>
                                                     );
@@ -536,7 +535,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                             {isFirmado.contratista ? (
                                 <img
                                     src={firmas.firmaContra}
-                                    alt={`Firma ${firma.firmaID}`}
+                                    alt="Firma contratista"
                                     className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "contratista" ? (
@@ -604,7 +603,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                             {isFirmado.residente ? (
                                 <img
                                     src={firmas.firmaRes}
-                                    alt={`Firma ${firma.firmaID}`}
+                                    alt="Firma residente"
                                     className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "residente" ? (
@@ -672,7 +671,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                             {isFirmado.supervisor ? (
                                 <img
                                     src={firmas.firmaSup}
-                                    alt={`Firma ${firma.firmaID}`}
+                                    alt="Firma supervisor"
                                     className="h-full max-h-20 object-contain max-w-full"
                                 />
                             ) : rol === "supervisor" ? (
