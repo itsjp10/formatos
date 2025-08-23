@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
 import React from 'react';
-import { Download, Loader2, Check, Signature, Trash2, Plus } from "lucide-react"
+import { Download, Loader2, Check, Signature, Trash2, Plus, Share2, Copy, X } from "lucide-react"
 import EncabezadoFormato from './EncabezadoFormato';
 
 const socket = io("http://localhost:3001");
@@ -98,6 +98,40 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
     const cancelDownload = () => {
         if (abortRef.current) abortRef.current.abort();
     };
+
+    // Share modal
+    const [shareOpen, setShareOpen] = useState(false);
+    const [shareLink, setShareLink] = useState('');
+    const [copyStatus, setCopyStatus] = useState('idle');
+
+    const openShare = () => {
+        // construye el link público
+        const link = `${window.location.origin}/formato/${publicLink}`;
+        setShareLink(link);
+        setCopyStatus('idle');
+        setShareOpen(true);
+    };
+
+    const copyToClipboard = async () => {
+        try {
+            await navigator.clipboard.writeText(shareLink);
+            setCopyStatus('ok');
+            setTimeout(() => setCopyStatus('idle'), 1200);
+        } catch (e) {
+            console.error(e);
+            setCopyStatus('err');
+            setTimeout(() => setCopyStatus('idle'), 1500);
+        }
+    };
+
+    // cerrar con ESC
+    useEffect(() => {
+        if (!shareOpen) return;
+        const onKey = (e) => e.key === 'Escape' && setShareOpen(false);
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [shareOpen]);
+
 
     const ensureFirmaOrWarn = () => {
         const ok = !!(firma && firma.imagenUrl);
@@ -300,7 +334,20 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
 
     return (
         <div className="w-full overflow-x-hidden">
-            <div className="flex justify-end md:mr-10">
+            <div className="flex justify-end md:mr-10 gap-2">
+                {publicLink && (
+                    <button
+                        type="button"
+                        onClick={openShare}
+                        className="no-print mt-2 inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 
+                 text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors 
+                 disabled:opacity-60 mb-2 text-sm"
+                        title="Compartir enlace"
+                    >
+                        <Share2 className="w-4 h-4" />
+                        Compartir
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={handleDownload}
@@ -328,7 +375,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                     )}
                 </button>
             </div>
-            
+
             {/* Encabezado del formato */}
             {titulos && (
                 <EncabezadoFormato
@@ -598,25 +645,6 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                     </tbody>
                 </table>
             </div>
-            {publicLink && (
-                <div className="mb-4 flex items-center justify-between px-2">
-                    <span className="text-xs text-gray-600">
-                        Enlace público:
-                        <span className="font-mono ml-1 text-blue-600 underline">
-                            {`${window.location.origin}/formato/${publicLink}`}
-                        </span>
-                    </span>
-                    <button
-                        onClick={() =>
-                            navigator.clipboard.writeText(`${window.location.origin}/formato/${publicLink}`)
-                        }
-                        className="bg-blue-100 hover:bg-blue-200 text-blue-800 px-3 py-1 rounded text-xs transition"
-                    >
-                        Copiar enlace
-                    </button>
-                </div>
-            )}
-
 
             {/* Botón anclado abajo a la izquierda */}
             <button
@@ -853,6 +881,57 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                     </div>
                 </div>
             )}
+            {shareOpen && (
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShareOpen(false);
+                    }}
+                    aria-modal="true"
+                    role="dialog"
+                >
+                    <div className="bg-white rounded-xl shadow-xl p-5 w-[90%] max-w-md">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-lg font-semibold text-gray-900">Compartir formato</h2>
+                            <button
+                                className="p-1 rounded hover:bg-gray-100"
+                                onClick={() => setShareOpen(false)}
+                                title="Cerrar"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <label className="block text-sm text-gray-600 mb-1">Enlace</label>
+                        <div className="flex items-center gap-2">
+                            <input
+                                readOnly
+                                value={shareLink}
+                                className="flex-1 px-3 py-2 border rounded-md text-sm bg-gray-50 overflow-x-auto"
+                                onFocus={(e) => e.target.select()}
+                            />
+                            <button
+                                type="button"
+                                onClick={copyToClipboard}
+                                className="inline-flex items-center gap-1 px-3 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm"
+                                title="Copiar al portapapeles"
+                            >
+                                <Copy className="w-4 h-4" />
+                                Copiar
+                            </button>
+                        </div>
+
+                        {/* Mensaje de estado de copiado */}
+                        {copyStatus === 'ok' && (
+                            <p className="mt-2 text-xs text-green-600">¡Copiado!</p>
+                        )}
+                        {copyStatus === 'err' && (
+                            <p className="mt-2 text-xs text-red-600">No se pudo copiar. Intenta seleccionar y copiar manualmente.</p>
+                        )}
+                    </div>
+                </div>
+            )}
+
 
         </div>
     );
