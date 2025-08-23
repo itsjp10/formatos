@@ -160,11 +160,13 @@ export default async function PrintFormatoPage({ params }) {
                                                         key={`${hIndex}-${kIndex}`}
                                                         rowSpan={numSubfilas}
                                                         className="border px-2 py-1 text-center align-top relative"
+                                                        style={header.label === "APTO" ? { maxWidth: 30, width: 30 } : {}}
                                                     >
                                                         <textarea
                                                             readOnly
                                                             value={row[`${header.label}-${key}-0`] || ''}
                                                             className="w-full h-full min-h-[60px] border-none outline-none resize-none"
+                                                            style={header.label === "APTO" ? { maxWidth: 30 } : {}}
                                                         />
                                                     </td>
                                                 );
