@@ -39,7 +39,7 @@ export default function Sidebar({
   setExpanded,
   showMobileToggle = true
 }) {
-  // Ocultar por defecto en pantallas pequeñas (como ChatGPT)
+  // Ocultar por defecto en pantallas pequeñas
   useEffect(() => {
     const isMobile = window.matchMedia("(max-width: 767px)").matches
     if (isMobile) setExpanded(false)
@@ -53,6 +53,11 @@ export default function Sidebar({
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
   }, [setExpanded])
+
+  const partes = nombre.trim().split(" ")
+
+  // Toma primer y segundo nombre (si existe)
+  const displayName = partes.length > 1 ? `${partes[0]} ${partes[1]}` : partes[0]
 
   return (
     <>
@@ -115,8 +120,10 @@ export default function Sidebar({
           {/* Footer usuario */}
           <div className="border-t flex p-3">
             <img
-              src="https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true"
-              alt=""
+              src={`https://ui-avatars.com/api/?background=c7d2fe&color=3730a3&bold=true&name=${encodeURIComponent(
+                displayName
+              )}`}
+              alt="Avatar"
               className="w-10 h-10 rounded-md"
             />
             <div
@@ -223,7 +230,6 @@ export function SidebarItem({
     </li>
   )
 }
-
 
 function SidebarFormatoItem({ text, active, onClick, formatoID, onRenombrar, editar = true }) {
   const { expanded } = useContext(SidebarContext)
