@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Trash2, MoreHorizontal } from 'lucide-react';
+import ConfirmFirmaDialog  from './ConfirmFirmaDialog';
+
 
 function Firma({ firma, onDelete, onSelect, selected }) {
     const fechaFormateada = new Date(firma.createdAt).toLocaleDateString('es-CO', {
@@ -10,6 +12,7 @@ function Firma({ firma, onDelete, onSelect, selected }) {
 
     const [menuAbierto, setMenuAbierto] = useState(false);
     const menuRef = useRef(null);
+    const [showConfirm, setShowConfirm] = useState(false)
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -32,9 +35,7 @@ function Firma({ firma, onDelete, onSelect, selected }) {
     const handleEliminar = (e) => {
         e.stopPropagation();
         setMenuAbierto(false);
-        if (confirm('¿Estás seguro de eliminar esta firma?')) {
-            onDelete?.(firma.firmaID);
-        }
+        setShowConfirm(true)
     };
 
     return (
@@ -79,6 +80,14 @@ function Firma({ firma, onDelete, onSelect, selected }) {
                     </div>
                 )}
             </div>
+            <ConfirmFirmaDialog
+                show={showConfirm}
+                onCancel={() => setShowConfirm(false)}
+                onConfirm={() => {
+                    onDelete?.(firma.firmaID)
+                    setShowConfirm(false)
+                }}
+            />
         </div>
     );
 }

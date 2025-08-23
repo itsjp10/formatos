@@ -1,5 +1,7 @@
 import React, { memo, useState } from 'react';
 import { TrashIcon, PlusIcon } from '@heroicons/react/24/solid';
+import ModalAlert from './ModalAlert';
+
 
 const Card = memo(function Card({ title, subtitle, right, children }) {
   return (
@@ -42,6 +44,17 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
     contratista: '',
     residenteObra: '',
   });
+
+  //Para manejar modales
+  const [alertModal, setAlertModal] = useState({
+    show: false,
+    title: "",
+    message: ""
+  });
+
+  const showModal = (title, message) => {
+    setAlertModal({ show: true, title, message });
+  };
 
   const addColumn = () => {
     if (!newColumnLabel.trim()) return;
@@ -110,7 +123,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
 
   const crearPlantilla = () => {
     if (!nombreFormato.trim() || !titulos.cod.trim() || !titulos.aprobo.trim() || !titulos.fechaEmision.trim()) {
-      alert('Debes completar los campos obligatorios: Nombre del formato, Código, Aprobó y Fecha de emisión.');
+      showModal("Error", "Debes completar los campos obligatorios: Nombre del formato, Código, Aprobó y Fecha de emisión. Intenta nuevamente.");
       return;
     }
     const estructura = {
@@ -126,12 +139,16 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
       numSubfilas: numSubfilas,
     };
     onCrearPlantilla?.(plantilla);
-    console.log('Plantilla creada:', plantilla);
-    alert('Plantilla creada (ver consola para estructura JSON)');
   };
 
   return (
     <div className="text-black w-full overflow-x-hidden mt-10 md:mt-0 lg:mt-10 sm:px-5 pb-10">
+      <ModalAlert
+        show={alertModal.show}
+        title={alertModal.title}
+        message={alertModal.message}
+        onClose={() => setAlertModal({ ...alertModal, show: false })}
+      />
       <div className="sticky top-0 z-20 mb-4 bg-gradient-to-b from-white to-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-gray-200">
         <div className="px-4 sm:px-0 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-7xl mx-auto">
           <div className="flex-1 min-w-0">

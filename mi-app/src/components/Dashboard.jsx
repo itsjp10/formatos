@@ -8,6 +8,7 @@ import EditorPlantilla from './EditorPlantilla' //Para crear plantillas
 import FirmaUploader from './FirmaUploader';
 import Firma from './Firma';
 import ConfirmDialog from './ConfirmDialog';
+import ModalAlert from './ModalAlert';
 
 
 
@@ -26,9 +27,20 @@ function Dashboard({ logout }) {
     const [selectedFirma, setSelectedFirma] = useState(null)
     const [isCompartido, setIsCompartido] = useState(false);
 
+    //Para manejar modales
+    const [alertModal, setAlertModal] = useState({
+        show: false,
+        title: "",
+        message: ""
+    });
+
     //Para saber si la sidebar está expanded o no
     const [expanded, setExpanded] = useState(false)
     const mainOffset = expanded ? "md:ml-64" : "md:ml-[72px]"
+
+    const showModal = (title, message) => {
+        setAlertModal({ show: true, title, message });
+    };
 
     useEffect(() => {
         // al montar verificamos si el usuario está en desktop, en ese caso seteamos expanded tru
@@ -256,7 +268,7 @@ function Dashboard({ logout }) {
             setFormatoToDelete(null);
             setShowConfirmDelete(false);
         } catch (err) {
-            alert('Error: ' + err.message);
+            showModal("Error", "Error al borrar formato: " + err.message);
         }
     };
 
@@ -309,10 +321,10 @@ function Dashboard({ logout }) {
             }
             setFirmas(prev => [nuevaFirma, ...prev]);
 
-            alert('Firma guardada con éxito');
+            showModal("Éxito", "Firma guardada con éxito");
         } catch (err) {
             console.error(err);
-            alert('Error al subir la firma: ' + err.message);
+            showModal("Error", "Error al subir la firma: " + err.message);
         }
     };
 
@@ -343,9 +355,9 @@ function Dashboard({ logout }) {
 
                 return nuevas;
             });
+            showModal("Éxito", "Firma eliminada");
         } catch (err) {
-            console.error('❌ Error al eliminar firma:', err);
-            alert('No se pudo eliminar la firma. Intenta nuevamente.');
+            showModal("Error", "No se pudo eliminar la firma. Intenta nuevamente.");
         }
     };
 
@@ -562,6 +574,12 @@ function Dashboard({ logout }) {
 
     return (
         <div className="flex bg-white min-h-screen w-full bg-white">
+            <ModalAlert
+                show={alertModal.show}
+                title={alertModal.title}
+                message={alertModal.message}
+                onClose={() => setAlertModal({ ...alertModal, show: false })}
+            />
             <ConfirmDialog
                 show={showConfirmDelete}
                 title="¿Eliminar formato?"
@@ -689,9 +707,9 @@ function Dashboard({ logout }) {
                             }
 
                             const data = await res.json();
-                            alert('Plantilla creada correctamente');
+                            showModal("Éxito", "Plantilla creada correctamente");
                         } catch (err) {
-                            alert(`Error: ${err.message}`);
+                            showModal("Error", "Error al crear plantilla: " + err.message);
                         }
                     }} />
                 )}
