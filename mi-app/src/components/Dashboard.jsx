@@ -591,12 +591,14 @@ function Dashboard({ logout }) {
             />
 
             <Sidebar nombre={usuario.name} rol={usuario.role} logout={logout} expanded={expanded} setExpanded={setExpanded}>
-                <SidebarItem
-                    icon={<Plus size={20} />}
-                    text="Nuevo formato"
-                    active={activeSidebarItem === "Nuevo formato"}
-                    onClick={() => { setPantalla(""); setActiveSidebarItem("Nuevo formato"); }}
-                />
+                {usuario.role == "residente" && (
+                    <SidebarItem
+                        icon={<Plus size={20} />}
+                        text="Nuevo formato"
+                        active={activeSidebarItem === "Nuevo formato"}
+                        onClick={() => { setPantalla(""); setActiveSidebarItem("Nuevo formato"); }}
+                    />
+                )}
                 <SidebarItem
                     icon={<Signature size={20} />}
                     text="Mis firmas"
@@ -612,19 +614,21 @@ function Dashboard({ logout }) {
 
                 }
                 <hr className="my-3" />
-                <SidebarSection title="Formatos">
-                    {(formatos || []).map((formato) => (
-                        <SidebarItem
-                            key={formato.formatoID}
-                            text={formato.name}
-                            tipo="formatoItem"
-                            active={activeSidebarItem === formato.formatoID}
-                            onClick={() => handleSeleccionarFormato(formato.formatoID)}
-                            formatoID={formato.formatoID}
-                            onRenombrar={handleRenombrar}
-                        />
-                    ))}
-                </SidebarSection>
+                {usuario.role === "residente" && (
+                    <SidebarSection title="Formatos">
+                        {(formatos || []).map((formato) => (
+                            <SidebarItem
+                                key={formato.formatoID}
+                                text={formato.name}
+                                tipo="formatoItem"
+                                active={activeSidebarItem === formato.formatoID}
+                                onClick={() => handleSeleccionarFormato(formato.formatoID)}
+                                formatoID={formato.formatoID}
+                                onRenombrar={handleRenombrar}
+                            />
+                        ))}
+                    </SidebarSection>
+                )}
                 <SidebarSection title="Formatos compartidos conmigo">
                     {(formatosCompartidos || []).map((compartido) => (
                         <SidebarItem
