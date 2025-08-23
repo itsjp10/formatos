@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
 import React from 'react';
-import { Signature, Trash2, Plus } from "lucide-react"
+import { Download, Loader2, Check, Signature, Trash2 } from "lucide-react"
+
 import EncabezadoFormato from './EncabezadoFormato';
 
 const socket = io("http://localhost:3001");
@@ -17,6 +18,87 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
     });
 
     const [showNoFirma, setShowNoFirma] = useState(false);
+
+    //Para la descarga:
+    const [downloading, setDownloading] = useState(false);
+    const [done, setDone] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const abortRef = useRef(null);
+
+    const handleDownload = async () => {
+        if (downloading) return;
+        setDone(false);
+        setProgress(0);
+        setDownloading(true);
+
+        const ctrl = new AbortController();
+        abortRef.current = ctrl;
+
+        try {
+            const res = await fetch(`/api/formatos/${formatoID}/pdf`, {
+                method: "GET",
+                credentials: "include",
+                signal: ctrl.signal,
+            });
+            if (!res.ok) throw new Error("No se pudo generar el PDF.");
+
+            // Intentamos leer como stream para progreso
+            const contentLength = Number(res.headers.get("Content-Length")) || 0;
+
+            if (res.body && res.body.getReader) {
+                const reader = res.body.getReader();
+                const chunks = [];
+                let received = 0;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    received += value.length;
+                    if (contentLength) {
+                        setProgress(Math.round((received / contentLength) * 100));
+                    }
+                }
+
+                const blob = new Blob(chunks, { type: "application/pdf" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `formato-${formatoID}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } else {
+                // Fallback sin streams
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `formato-${formatoID}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            }
+
+            setDone(true);
+            // Resetea el estado “done” tras 1.2s para volver al icono normal
+            setTimeout(() => setDone(false), 1200);
+        } catch (e) {
+            if (e.name !== "AbortError") {
+                console.error(e);
+                alert("Hubo un problema descargando el PDF.");
+            }
+        } finally {
+            setDownloading(false);
+            abortRef.current = null;
+        }
+    };
+
+    const cancelDownload = () => {
+        if (abortRef.current) abortRef.current.abort();
+    };
 
     const ensureFirmaOrWarn = () => {
         const ok = !!(firma && firma.imagenUrl);
@@ -135,13 +217,31 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
 
     return (
         <div className="w-full overflow-x-hidden">
-            <a
-                href={`/api/formatos/${formatoID}/pdf`}
-                download={`formato-${formatoID}.pdf`}
-                className="no-print mt-2 bg-blue-600 hover:bg-blue-700 text-white rounded px-3 py-1 text-sm inline-block"
+            <button
+                type="button"
+                onClick={handleDownload}
+                className="no-print mt-2 inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 
+             text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors disabled:opacity-60 mb-2 text-sm"
+                disabled={downloading}
+                title="Descargar"
             >
-                Descargar PDF
-            </a>
+                {downloading ? (
+                    <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {progress > 0 ? `${progress}%` : "Generando..."}
+                    </>
+                ) : done ? (
+                    <>
+                        <Check className="w-4 h-4" />
+                        ¡Listo!
+                    </>
+                ) : (
+                    <>
+                        <Download className="w-4 h-4" />
+                        Descargar
+                    </>
+                )}
+            </button>
 
             {/* Encabezado del formato */}
             {titulos && (
