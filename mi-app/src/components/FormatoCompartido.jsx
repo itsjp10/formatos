@@ -112,7 +112,18 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
     // referencia para evitar bucles infinitos
     const isRemoteUpdate = useRef(false);
 
+    // Crea el socket dentro del componente
+    const socketRef = useRef(null);
+
     useEffect(() => {
+        // Solo crea el socket si no existe
+        if (!socketRef.current) {
+            socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+                transports: ["websocket", "polling"], // polling como fallback
+                path: "/socket.io",
+            });
+        }
+        const socket = socketRef.current;
         socket.emit("join-formato", formatoID);
 
         socket.on("formato-actualizado", (newData) => {
@@ -135,6 +146,9 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
 
         return () => {
             socket.off("formato-actualizado");
+            // Desconecta el socket al desmontar el componente
+            socket.disconnect();
+            socketRef.current = null;
         };
     }, [formatoID]);
 
