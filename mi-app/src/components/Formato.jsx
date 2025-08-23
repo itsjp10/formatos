@@ -151,7 +151,10 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
     useEffect(() => {
         // Solo crea el socket si no existe
         if (!socketRef.current) {
-            socketRef.current = io("http://localhost:3001");
+            socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+                transports: ["websocket", "polling"], // polling como fallback
+                path: "/socket.io",
+            });
         }
         const socket = socketRef.current;
         socket.emit("join-formato", formatoID);
