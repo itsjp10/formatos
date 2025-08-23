@@ -300,33 +300,35 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
 
     return (
         <div className="w-full overflow-x-hidden">
-            <button
-                type="button"
-                onClick={handleDownload}
-                className="no-print mt-2 inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 
-             text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors disabled:opacity-60 mb-2 text-sm"
-                disabled={downloading}
-                title="Descargar"
-            >
-                {downloading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        {progress > 0 ? `${progress}%` : "Generando..."}
-                    </>
-                ) : done ? (
-                    <>
-                        <Check className="w-4 h-4" />
-                        ¡Listo!
-                    </>
-                ) : (
-                    <>
-                        <Download className="w-4 h-4" />
-                        Descargar
-                    </>
-                )}
-            </button>
-
-
+            <div className="flex justify-end md:mr-10">
+                <button
+                    type="button"
+                    onClick={handleDownload}
+                    className="no-print mt-2 inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 
+               text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors 
+               disabled:opacity-60 mb-2 text-sm"
+                    disabled={downloading}
+                    title="Descargar"
+                >
+                    {downloading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {progress > 0 ? `${progress}%` : "Generando..."}
+                        </>
+                    ) : done ? (
+                        <>
+                            <Check className="w-4 h-4" />
+                            ¡Listo!
+                        </>
+                    ) : (
+                        <>
+                            <Download className="w-4 h-4" />
+                            Descargar
+                        </>
+                    )}
+                </button>
+            </div>
+            
             {/* Encabezado del formato */}
             {titulos && (
                 <EncabezadoFormato
