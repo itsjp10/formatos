@@ -4,7 +4,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 const ALLOWED_ORIGIN =
-  process.env.CORS_ORIGIN || "https://formatos-production.up.railway.app/"; // pon tu dominio web en prod para más seguridad
+  process.env.CORS_ORIGIN || "https://formatos.up.railway.app/"; // pon tu dominio web en prod para más seguridad
 
 // healthcheck HTTP muy simple (Railway lo usa para marcar Healthy)
 const httpServer = createServer((req, res) => {
