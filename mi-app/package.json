@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "prisma migrate deploy && next start -p $PORT",
+    "start": "prisma migrate deploy && node .next/standalone/server.js",
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
@@ -13,9 +13,10 @@
     "@headlessui/react": "^2.2.7",
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.14.0",
+    "@sparticuz/chromium": "^138.0.2",
     "lucide-react": "^0.541.0",
     "next": "15.4.3",
-    "puppeteer": "^24.17.0",
+    "puppeteer-core": "^24.17.0",
     "react": "19.1.0",
     "react-datepicker": "^8.7.0",
     "react-dom": "19.1.0",

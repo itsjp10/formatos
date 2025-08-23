@@ -1,27 +1,25 @@
 export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
-export async function GET(req, ctx) {
-  const { id } = await ctx.params; 
+export async function GET(req, { params }) {
+  const { id } = await params;
 
   try {
-    // Obtén una URL absoluta (en dev y en prod)
-    // a) preferimos NEXT_PUBLIC_APP_URL si existe
+    const urlObj = new URL(req.url);
     const base =
       process.env.NEXT_PUBLIC_APP_URL ||
-      // b) si no, construimos desde el request
-      (() => {
-        const url = new URL(req.url);
-        return `${url.protocol}//${url.host}`;
-      })();
+      `${urlObj.protocol}//${urlObj.host}`;
 
     const targetUrl = `${base}/formato/print/${id}`;
 
     const browser = await puppeteer.launch({
-      // Si algo falla: args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
