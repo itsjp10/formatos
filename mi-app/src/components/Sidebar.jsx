@@ -86,7 +86,7 @@ export default function Sidebar({
           fixed top-0 left-0 z-50 h-screen bg-white
           transform transition-all duration-300 will-change-transform
           ${expanded ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${expanded ? "w-64" : "w-18"} md:${expanded ? "w-64" : "w-18"}
+          ${expanded ? "w-64" : "w-18"} ${expanded ? "md:w-64" : "md:w-18"}
           border-r shadow-sm
         `}
       >
@@ -95,7 +95,7 @@ export default function Sidebar({
           <div className="p-4 pb-2 flex justify-between items-center">
             <img
               src="/images/vive_rio_img.png"
-              className={`overflow-hidden transition-all ${expanded ? "w-25" : "w-0"}`}
+              className={`overflow-hidden transition-all ${expanded ? "w-24" : "w-0"}`}
               alt="Logo"
             />
             {/* En desktop: botón colapsar/expandir; en móvil: cierra */}
@@ -126,11 +126,13 @@ export default function Sidebar({
               alt="Avatar"
               className="w-10 h-10 rounded-md"
             />
-            <div
-              className={`flex justify-between items-center overflow-hidden transition-all ${expanded ? "w-52 ml-3" : "w-0"}`}
+            <div className={`
+                        flex-1 min-w-0 ml-3 flex items-center justify-between
+                        transition-opacity ${expanded ? "opacity-100" : "opacity-0 pointer-events-none"}
+                        `}
             >
               <div className="leading-4">
-                <h4 className="font-semibold text-black">{nombre}</h4>
+                <h4 className="font-semibold text-black truncate">{nombre}</h4>
                 <span className="text-xs text-gray-600 color-black">{rol}</span>
               </div>
               <button
