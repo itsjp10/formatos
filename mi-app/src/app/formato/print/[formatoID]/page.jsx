@@ -173,21 +173,32 @@ export default async function PrintFormatoPage({ params }) {
                                             if (isSimpleField(header.label)) return null;
 
                                             if (isDateField(header.label)) {
-                                                return (
-                                                    <td
-                                                        key={`${hIndex}-${kIndex}`}
-                                                        className="border px-2 py-1 text-center"
-                                                        style={{ width: 95, minWidth: 95 }}
-                                                    >
-                                                        <input
-                                                            readOnly
-                                                            type="text"
-                                                            value={row[fullKey] || ''}
-                                                            className="w-full border-none outline-none"
-                                                        />
-                                                    </td>
-                                                );
-                                            }
+                                                    const cellValue = row[fullKey] || '';
+
+                                                    return (
+                                                        <td
+                                                            key={`${hIndex}-${kIndex}`}
+                                                            className="border px-2 py-1 text-center"
+                                                            style={{ width: 95, minWidth: 95 }}
+                                                        >
+                                                            {cellValue ? (
+                                                                <input
+                                                                    type="date"
+                                                                    readOnly
+                                                                    value={cellValue}
+                                                                    className="w-full border-none outline-none"
+                                                                />
+                                                            ) : (
+                                                                <input
+                                                                    type="text"
+                                                                    readOnly
+                                                                    value=""
+                                                                    className="w-full border-none outline-none"
+                                                                />
+                                                            )}
+                                                        </td>
+                                                    );
+                                                }
 
                                             if (isSignatureField(header.label)) {
                                                 return (

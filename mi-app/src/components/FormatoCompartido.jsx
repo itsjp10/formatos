@@ -390,20 +390,32 @@ function FormatoCompartido({ formatoID, tipoFormato, onGuardar, rol, firma }) {
                                                 if (isSimpleField(header.label)) return null;
 
                                                 if (isDateField(header.label)) {
+                                                    const cellValue = row[fullKey] || '';
+
                                                     return (
                                                         <td
                                                             key={`${hIndex}-${kIndex}`}
                                                             className="border px-2 py-1 text-center"
                                                         >
-                                                            <input
-                                                                type="text"
-                                                                value={row[fullKey] || ''}
-                                                                readOnly
-                                                                className="w-full min-w-[65px] border-none outline-none"
-                                                            />
+                                                            {cellValue ? (
+                                                                <input
+                                                                    type="date"
+                                                                    readOnly
+                                                                    value={cellValue}
+                                                                    className="w-full min-w-[65px] border-none outline-none bg-white"
+                                                                />
+                                                            ) : (
+                                                                <input
+                                                                    type="text"
+                                                                    readOnly
+                                                                    value=""
+                                                                    className="w-full min-w-[65px] border-none outline-none bg-white"
+                                                                />
+                                                            )}
                                                         </td>
                                                     );
                                                 }
+
 
                                                 if (isSignatureField(header.label)) {
                                                     return (

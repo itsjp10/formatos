@@ -89,16 +89,6 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
     setRows([...rows, newRow]);
   };
 
-  const updateCell = (rowIndex, key, value) => {
-    setRows((prev) => prev.map((row, i) => (i === rowIndex ? { ...row, [key]: value } : row)));
-  };
-
-  const toggleCheckbox = (rowIndex, key, value) => {
-    setRows((prev) =>
-      prev.map((row, i) => (i === rowIndex ? { ...row, [key]: row[key] === value ? '' : value } : row))
-    );
-  };
-
   const handleNumSubfilasChange = (e) => {
     const count = Math.max(1, parseInt(e.target.value) || 1);
     setNumSubfilas(count);
@@ -151,7 +141,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
           <div className="flex gap-2">
             <button
               onClick={crearPlantilla}
-              className="inline-flex items-center justify-center rounded-xl border border-purple-600 bg-purple-600 text-white px-4 py-2 text-sm font-medium shadow hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              className="inline-flex items-center justify-center rounded-xl border border-[#CDB4FF] bg-[#CDB4FF] text-slate-900 px-4 py-2 text-sm font-medium shadow hover:bg-[#B79BFF] focus:outline-none focus:ring-2 focus:ring-[#CDB4FF]/50 focus:ring-offset-2"
             >
               <PlusIcon className="h-4 w-4 mr-2" /> Crear plantilla
             </button>
@@ -229,7 +219,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
               </div>
               <button
                 onClick={addRow}
-                className="inline-flex items-center rounded-xl bg-green-600 text-white px-3 py-2 text-sm font-medium shadow hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="inline-flex items-center rounded-xl bg-[#B9FBC0] text-slate-900 px-3 py-2 text-sm font-medium shadow hover:bg-[#9FE8A8] focus:outline-none focus:ring-2 focus:ring-[#B9FBC0]/50"
               >
                 <PlusIcon className="h-4 w-4 mr-1" /> Añadir fila
               </button>
@@ -270,7 +260,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
               </div>
               <button
                 onClick={addColumn}
-                className="h-10 sm:h-[42px] w-full sm:w-auto self-end inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-4 py-2 text-sm font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-10 sm:h-[42px] w-full sm:w-auto self-end inline-flex items-center justify-center rounded-xl bg-[#A0E7E5] text-slate-900 px-4 py-2 text-sm font-medium shadow hover:bg-[#8DD3D1] focus:outline-none focus:ring-2 focus:ring-[#A0E7E5]/50"
               >
                 Añadir columna
               </button>
@@ -330,10 +320,10 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                     {headers.map((header) =>
                       header.subheaders?.length > 0
                         ? header.subheaders.map((sub, i) => (
-                            <th key={i} className="border bg-gray-100 px-2 sm:px-3 py-2 text-center">
-                              {sub}
-                            </th>
-                          ))
+                          <th key={i} className="border bg-gray-100 px-2 sm:px-3 py-2 text-center">
+                            {sub}
+                          </th>
+                        ))
                         : null
                     )}
                   </tr>
@@ -341,7 +331,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                 <tbody>
                   {rows.map((row, rowIndex) =>
                     [...Array(numSubfilas)].map((_, subIndex) => (
-                      <tr key={`${rowIndex}-${subIndex}`} className="even:bg-white odd:bg-gray-50">
+                      <tr key={`${rowIndex}-${subIndex}`} className="bg-white">
                         {headers.map((header, hIndex) => {
                           const isTextField = ['APTO', 'OBSERVACIONES'].includes(header.label);
                           const isDateField = header.label === 'FECHA';
@@ -356,7 +346,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                                   <input
                                     type="text"
                                     value={row[`${header.label}-${key}-0`] || ''}
-                                    onChange={(e) => updateCell(rowIndex, `${header.label}-${key}-0`, e.target.value)}
+                                    readOnly
                                     className="w-full rounded-lg border border-transparent bg-white focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 px-2 py-1"
                                   />
                                 </td>
@@ -371,7 +361,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                                   <input
                                     type="text"
                                     value={row[fullKey] || ''}
-                                    onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
+                                    readOnly
                                     className="w-full rounded-lg border border-transparent bg-white focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 px-2 py-1"
                                   />
                                 ) : (
@@ -380,7 +370,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                                       <input
                                         type="checkbox"
                                         checked={row[fullKey] === 'C'}
-                                        onChange={() => toggleCheckbox(rowIndex, fullKey, 'C')}
+                                        readOnly
                                         className="rounded border-gray-300 focus:ring-purple-500"
                                       />
                                       <span className="ml-1">C</span>
@@ -389,7 +379,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                                       <input
                                         type="checkbox"
                                         checked={row[fullKey] === 'NC'}
-                                        onChange={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
+                                        readOnly
                                         className="rounded border-gray-300 focus:ring-purple-500"
                                       />
                                       <span className="ml-1">NC</span>
