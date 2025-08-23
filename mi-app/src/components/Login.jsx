@@ -46,6 +46,7 @@ export default function Login() {
 
   const logout = () => {
     localStorage.removeItem("user")
+    localStorage.removeItem("selectedFirmaId")
     setLoggedUser(null)
   }
 

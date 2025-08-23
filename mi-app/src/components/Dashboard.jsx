@@ -26,6 +26,7 @@ function Dashboard({ logout }) {
     const [firmas, setFirmas] = useState([])
     const [selectedFirma, setSelectedFirma] = useState(null)
     const [isCompartido, setIsCompartido] = useState(false);
+    const [compartidosReady, setCompartidosReady] = useState(false);
 
     //Para manejar modales
     const [alertModal, setAlertModal] = useState({
@@ -64,7 +65,7 @@ function Dashboard({ logout }) {
 
     // ⬇️ NUEVO useEffect: abrir formato desde link público
     useEffect(() => {
-        if (!usuario) return;
+        if (!usuario || !compartidosReady) return;
 
         const raw = sessionStorage.getItem("publicLinkHandoff");
         if (!raw) return;
@@ -203,8 +204,8 @@ function Dashboard({ logout }) {
                 }
 
                 const compartidosData = await resCompartidos.json()
-                console.log("fetch de compartidos_: ", compartidosData)
                 setFormatosCompartidos(compartidosData)
+                setCompartidosReady(true);
 
             } catch (err) {
                 setError(err.message)
@@ -377,6 +378,7 @@ function Dashboard({ logout }) {
                 }
                 const signatures = await res.json()
                 setFirmas(signatures)
+                console.log("selectedFirma es", selectedFirma)
                 if (signatures.length > 0 && !selectedFirma) {
                     const primera = signatures[0].firmaID;
                     setSelectedFirma(primera);
