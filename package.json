@@ -20,8 +20,8 @@
   "engines": { "node": "20.x" },
   "scripts": {
     "postinstall": "prisma generate",
-    "build": "prisma migrate deploy && next build",
-    "start": "next start -p $PORT",
+    "build": "next build",                     
+    "start": "prisma migrate deploy && next start -p $PORT",
     "dev": "next dev"
   }
 }
