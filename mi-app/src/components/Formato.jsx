@@ -4,7 +4,10 @@ import React from 'react';
 import { Download, Loader2, Check, Signature, Trash2, Plus, Share2, Copy, X } from "lucide-react"
 import EncabezadoFormato from './EncabezadoFormato';
 
-const socket = io("http://localhost:3001");
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+    transports: ["websocket"],   // o ["websocket","polling"] si quieres fallback
+    path: "/socket.io",
+});
 
 function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) {
     //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar    
