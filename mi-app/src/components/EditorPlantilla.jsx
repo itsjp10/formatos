@@ -90,15 +90,13 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
   };
 
   const updateCell = (rowIndex, key, value) => {
-    const updated = [...rows];
-    updated[rowIndex][key] = value;
-    setRows(updated);
+    setRows((prev) => prev.map((row, i) => (i === rowIndex ? { ...row, [key]: value } : row)));
   };
 
   const toggleCheckbox = (rowIndex, key, value) => {
-    const updated = [...rows];
-    updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
-    setRows(updated);
+    setRows((prev) =>
+      prev.map((row, i) => (i === rowIndex ? { ...row, [key]: row[key] === value ? '' : value } : row))
+    );
   };
 
   const handleNumSubfilasChange = (e) => {
@@ -125,34 +123,30 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
       alert('Debes completar los campos obligatorios: Nombre del formato, Código, Aprobó y Fecha de emisión.');
       return;
     }
-
     const estructura = {
       headers: headers,
       filas: rows,
       numSubfilas: numSubfilas,
       titulos: titulos,
     };
-
     const plantilla = {
       nombre: nombreFormato.trim(),
       descripcion: descripcionFormato.trim(),
       estructura,
       numSubfilas: numSubfilas,
     };
-
     onCrearPlantilla?.(plantilla);
     console.log('Plantilla creada:', plantilla);
     alert('Plantilla creada (ver consola para estructura JSON)');
   };
 
   return (
-    <div className="text-black">
-      {/* Toolbar pegajosa */}
-      <div className="sticky top-0 z-20 -mx-4 sm:mx-0 mb-4 bg-gradient-to-b from-white to-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-gray-200">
-        <div className="px-4 sm:px-0 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex-1">
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Editor de plantillas</h1>
-            <p className="text-xs sm:text-sm text-gray-500">Define cabeceras, subfilas y meta‑datos para generar un formato reutilizable.</p>
+    <div className="text-black w-full overflow-x-hidden mt-10 md:mt-0 lg:mt-10 sm:px-5 pb-10">
+      <div className="sticky top-0 z-20 mb-4 bg-gradient-to-b from-white to-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-gray-200">
+        <div className="px-4 sm:px-0 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-7xl mx-auto">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Editor de plantillas</h1>
+            <p className="text-xs sm:text-sm text-gray-500">Define cabeceras, subfilas y meta-datos para generar un formato reutilizable.</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -165,12 +159,8 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
         </div>
       </div>
 
-      <div className="space-y-6">
-        {/* Card: Información general */}
-        <Card
-          title="Información del formato"
-          subtitle="Nombre, descripción y campos superiores que aparecerán en el encabezado."
-        >
+      <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-0">
+        <Card title="Información del formato" subtitle="Nombre, descripción y campos superiores que aparecerán en el encabezado.">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Nombre del formato *</label>
@@ -194,7 +184,6 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
             </div>
           </div>
 
-          {/* Títulos del encabezado */}
           <div className="mt-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Campos del encabezado</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
@@ -223,7 +212,6 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
           </div>
         </Card>
 
-        {/* Card: Estructura de columnas y filas */}
         <Card
           title="Estructura de la tabla"
           subtitle="Crea columnas con subcolumnas, define subfilas por fila y agrega filas al cuerpo."
@@ -248,7 +236,6 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
             </div>
           }
         >
-          {/* Controles columnas */}
           <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
             <div className="flex-1 space-y-2">
               <label className="text-sm font-medium text-gray-700">Nombre columna</label>
@@ -270,7 +257,7 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                 className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 w-full sm:w-auto">
               <div className="sm:hidden flex-1 space-y-2">
                 <label className="text-sm font-medium text-gray-700">Subfilas por fila</label>
                 <input
@@ -283,17 +270,16 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
               </div>
               <button
                 onClick={addColumn}
-                className="h-10 sm:h-[42px] self-end inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-4 py-2 text-sm font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="h-10 sm:h-[42px] w-full sm:w-auto self-end inline-flex items-center justify-center rounded-xl bg-blue-600 text-white px-4 py-2 text-sm font-medium shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Añadir columna
               </button>
             </div>
           </div>
 
-          {/* Tabla */}
           <div className="mt-5 border border-gray-200 overflow-hidden">
             <div className="w-full overflow-x-auto">
-              <table className="table-auto border-collapse w-full text-xs">
+              <table className="w-full text-xs sm:text-sm">
                 <thead>
                   <tr>
                     {headers.map((header, i) =>
@@ -301,15 +287,19 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                         <th
                           key={i}
                           colSpan={header.subheaders.length}
-                          className="border bg-gray-200 px-2 py-1 text-center"
+                          className="border bg-gray-200 px-2 sm:px-3 py-2 text-center"
                         >
                           <div className="flex justify-between items-center gap-1">
                             <span className="flex-1">{header.label}</span>
                             {!header.fixed && (
-                              <TrashIcon
-                                className="w-4 h-4 text-red-600 cursor-pointer"
+                              <button
+                                type="button"
                                 onClick={() => deleteColumn(header.label)}
-                              />
+                                className="p-1 rounded hover:bg-red-50"
+                                aria-label={`Eliminar columna ${header.label}`}
+                              >
+                                <TrashIcon className="w-4 h-4 text-red-600" />
+                              </button>
                             )}
                           </div>
                         </th>
@@ -317,15 +307,19 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                         <th
                           key={i}
                           rowSpan={2}
-                          className="border bg-gray-200 px-2 py-1 text-center"
+                          className="border bg-gray-200 px-2 sm:px-3 py-2 text-center"
                         >
                           <div className="flex justify-between items-center gap-1">
                             <span className="flex-1">{header.label}</span>
                             {!header.fixed && (
-                              <TrashIcon
-                                className="w-4 h-4 text-red-600 cursor-pointer"
+                              <button
+                                type="button"
                                 onClick={() => deleteColumn(header.label)}
-                              />
+                                className="p-1 rounded hover:bg-red-50"
+                                aria-label={`Eliminar columna ${header.label}`}
+                              >
+                                <TrashIcon className="w-4 h-4 text-red-600" />
+                              </button>
                             )}
                           </div>
                         </th>
@@ -336,13 +330,10 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                     {headers.map((header) =>
                       header.subheaders?.length > 0
                         ? header.subheaders.map((sub, i) => (
-                          <th
-                            key={i}
-                            className="border bg-gray-100 px-2 py-1 text-center"
-                          >
-                            {sub}
-                          </th>
-                        ))
+                            <th key={i} className="border bg-gray-100 px-2 sm:px-3 py-2 text-center">
+                              {sub}
+                            </th>
+                          ))
                         : null
                     )}
                   </tr>
@@ -350,35 +341,23 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                 <tbody>
                   {rows.map((row, rowIndex) =>
                     [...Array(numSubfilas)].map((_, subIndex) => (
-                      <tr key={`${rowIndex}-${subIndex}`}>
+                      <tr key={`${rowIndex}-${subIndex}`} className="even:bg-white odd:bg-gray-50">
                         {headers.map((header, hIndex) => {
                           const isTextField = ['APTO', 'OBSERVACIONES'].includes(header.label);
                           const isDateField = header.label === 'FECHA';
-                          const keys = header.subheaders?.length
-                            ? header.subheaders
-                            : [header.label];
+                          const keys = header.subheaders?.length ? header.subheaders : [header.label];
 
                           return keys.map((key, kIndex) => {
                             const fullKey = `${header.label}-${key}-${subIndex}`;
 
                             if (isTextField && subIndex === 0) {
                               return (
-                                <td
-                                  key={`${hIndex}-${kIndex}`}
-                                  rowSpan={numSubfilas}
-                                  className="border px-2 py-1 text-center align-top"
-                                >
+                                <td key={`${hIndex}-${kIndex}`} rowSpan={numSubfilas} className="border px-2 sm:px-3 py-2 align-top">
                                   <input
                                     type="text"
                                     value={row[`${header.label}-${key}-0`] || ''}
-                                    onChange={(e) =>
-                                      updateCell(
-                                        rowIndex,
-                                        `${header.label}-${key}-0`,
-                                        e.target.value
-                                      )
-                                    }
-                                    className="w-full border-none outline-none"
+                                    onChange={(e) => updateCell(rowIndex, `${header.label}-${key}-0`, e.target.value)}
+                                    className="w-full rounded-lg border border-transparent bg-white focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 px-2 py-1"
                                   />
                                 </td>
                               );
@@ -387,29 +366,31 @@ export default function EditorPlantilla({ onCrearPlantilla }) {
                             if (isTextField) return null;
 
                             return (
-                              <td key={`${hIndex}-${kIndex}`} className="border px-2 py-1 text-center">
+                              <td key={`${hIndex}-${kIndex}`} className="border px-2 sm:px-3 py-2 text-center">
                                 {isDateField || header.label === 'FIRMA' ? (
                                   <input
                                     type="text"
                                     value={row[fullKey] || ''}
                                     onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
-                                    className="w-full border-none outline-none"
+                                    className="w-full rounded-lg border border-transparent bg-white focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 px-2 py-1"
                                   />
                                 ) : (
-                                  <div className="flex justify-center gap-2">
-                                    <label className="flex items-center text-sm">
+                                  <div className="flex justify-center gap-3">
+                                    <label className="flex items-center text-xs sm:text-sm">
                                       <input
                                         type="checkbox"
                                         checked={row[fullKey] === 'C'}
                                         onChange={() => toggleCheckbox(rowIndex, fullKey, 'C')}
+                                        className="rounded border-gray-300 focus:ring-purple-500"
                                       />
                                       <span className="ml-1">C</span>
                                     </label>
-                                    <label className="flex items-center text-sm">
+                                    <label className="flex items-center text-xs sm:text-sm">
                                       <input
                                         type="checkbox"
                                         checked={row[fullKey] === 'NC'}
                                         onChange={() => toggleCheckbox(rowIndex, fullKey, 'NC')}
+                                        className="rounded border-gray-300 focus:ring-purple-500"
                                       />
                                       <span className="ml-1">NC</span>
                                     </label>
