@@ -28,6 +28,9 @@ function Dashboard({ logout }) {
     const [isCompartido, setIsCompartido] = useState(false);
     const [compartidosReady, setCompartidosReady] = useState(false);
 
+    // Auto pilot feature for own formats
+    const [isAuto, setIsAuto] = useState(false)
+
     //Para manejar modales
     const [alertModal, setAlertModal] = useState({
         show: false,
@@ -679,6 +682,8 @@ function Dashboard({ logout }) {
                                     firma={firmaSeleccionada}
                                     tipoFormato={tipoFormato}
                                     publicLink={publicLink}
+                                    isAuto={isAuto}
+                                    onAuto={setIsAuto}
                                 />
                             ) : (
                                 <FormatoCompartido
@@ -688,7 +693,7 @@ function Dashboard({ logout }) {
                                     onGuardar={handleGuardarFormato}
                                     rol={usuario.role}
                                     firma={firmaSeleccionada}
-                                    tipoFormato={tipoFormato}
+                                    tipoFormato={tipoFormato}                                    
                                 />
                             )}
 

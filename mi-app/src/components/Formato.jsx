@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from "socket.io-client";
 import React from 'react';
-import { Download, Loader2, Check, Signature, Trash2, Plus, Share2, Copy, X } from "lucide-react"
+import { Download, Loader2, Check, Signature, Trash2, Plus, Share2, Copy, X, RefreshCw } from "lucide-react"
 import EncabezadoFormato from './EncabezadoFormato';
 
 const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -9,7 +9,7 @@ const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
     path: "/socket.io",
 });
 
-function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) {
+function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink, isAuto, onAuto }) {
     //vamos a obtener la informacion de contenidoFormato de un fetch para no depender de params, también evitamos la desincronizacion con los datos al editar    
     const [data, setData] = useState({
         columnas: [],
@@ -319,19 +319,52 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
 
 
     const toggleCheckbox = (rowIndex, key, value) => {
+        // extrae el subIndex del key: ...-<subIndex>
+        const match = key.match(/-(\d+)$/);
+        const subIndex = match ? Number(match[1]) : 0;
+
         const updated = [...rows];
-        updated[rowIndex][key] = updated[rowIndex][key] === value ? '' : value;
+        const currentVal = updated[rowIndex][key];
+        const newVal = currentVal === value ? '' : value; // toggle local
+
+        if (!isAuto) {
+            // comportamiento normal: solo la celda
+            updated[rowIndex][key] = newVal;
+        } else {
+            // modo auto: aplica a TODA la fila (mismo subIndex) en columnas C/NC
+            headers.forEach((header) => {
+                const keys = header.subheaders?.length ? header.subheaders : [header.label];
+
+                // saltar campos que no son de C/NC
+                if (
+                    header.fixed ||
+                    isSimpleField(header.label) ||
+                    isDateField(header.label) ||
+                    isSignatureField(header.label)
+                ) {
+                    return;
+                }
+
+                keys.forEach((k) => {
+                    const fullKey = `${header.label}-${k}-${subIndex}`;
+                    // solo marcamos celdas C/NC (todas las que usan el mismo esquema)
+                    updated[rowIndex][fullKey] = newVal;
+                });
+            });
+        }
+
         setRows(updated);
 
         const nuevoData = {
             filas: updated,
-            columnas: headers,
+            columnas: headers,  // usa headers como fuente de verdad
             numSubfilas,
-            titulos: titulos,
-            firmas: firmas,
+            titulos,
+            firmas,
         };
         syncAndSave(nuevoData);
     };
+
 
 
     const isSimpleField = (label) => ['APTO', 'OBSERVACIONES'].includes(label);
@@ -341,13 +374,25 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
     return (
         <div className="w-full overflow-x-hidden">
             <div className="flex justify-end md:mr-10 gap-2">
+                {rol === "residente" && (
+                    <button
+                        type="button"
+                        onClick={() => onAuto?.(!isAuto)}
+                        className={`no-print mt-2 inline-flex items-center gap-2 ${isAuto ? "bg-green-200" : "bg-gray-200"} ${isAuto ? "hover:bg-green-300" : "hover:bg-gray-300"} 
+                 text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors 
+                 disabled:opacity-60 mb-2 text-sm cursor-pointer`}
+                        title="Autocompletar"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                )}
                 {publicLink && (
                     <button
                         type="button"
                         onClick={openShare}
                         className="no-print mt-2 inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 
                  text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors 
-                 disabled:opacity-60 mb-2 text-sm"
+                 disabled:opacity-60 mb-2 text-sm cursor-pointer"
                         title="Compartir enlace"
                     >
                         <Share2 className="w-4 h-4" />
@@ -359,7 +404,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                     onClick={handleDownload}
                     className="no-print mt-2 inline-flex items-center gap-2 bg-gray-200 hover:bg-gray-300 
                text-gray-800 rounded-full px-3 py-1 shadow-sm transition-colors 
-               disabled:opacity-60 mb-2 text-sm"
+               disabled:opacity-60 mb-2 text-sm cursor-pointer"
                     disabled={downloading}
                     title="Descargar"
                 >
@@ -897,6 +942,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink }) 
                     role="dialog"
                 >
                     <div className="bg-white rounded-xl shadow-xl p-5 w-[90%] max-w-md">
+
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-lg font-semibold text-gray-900">Compartir formato</h2>
                             <button
