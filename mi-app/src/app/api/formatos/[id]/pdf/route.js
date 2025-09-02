@@ -34,7 +34,7 @@ export async function GET(req, { params }) {
     await page.evaluateHandle('document.fonts.ready');
 
     const pdfBuffer = await page.pdf({
-      format: 'A4',
+      format: 'Letter',
       landscape: true,
       printBackground: true,
       margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
