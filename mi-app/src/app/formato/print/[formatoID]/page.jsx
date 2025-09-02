@@ -160,13 +160,13 @@ export default async function PrintFormatoPage({ params }) {
                                                         key={`${hIndex}-${kIndex}`}
                                                         rowSpan={numSubfilas}
                                                         className="border px-2 py-1 text-center align-top relative"
-                                                        style={header.label === "APTO" ? { maxWidth: 30, width: 30 } : {}}
+                                                        style={header.label === "APTO" ? { maxWidth: 40, width: 40 } : {}}
                                                     >
                                                         <textarea
                                                             readOnly
                                                             value={row[`${header.label}-${key}-0`] || ''}
                                                             className="w-full h-full min-h-[60px] border-none outline-none resize-none"
-                                                            style={header.label === "APTO" ? { maxWidth: 30 } : {}}
+                                                            style={header.label === "APTO" ? { maxWidth: 40 } : {}}
                                                         />
                                                     </td>
                                                 );
@@ -181,7 +181,7 @@ export default async function PrintFormatoPage({ params }) {
                                                         <td
                                                             key={`${hIndex}-${kIndex}`}
                                                             className="border px-2 py-1 text-center"
-                                                            style={{ width: 95, minWidth: 95 }}
+                                                            style={{ width: 85, minWidth: 85 }}
                                                         >
                                                             {cellValue ? (
                                                                 <input
