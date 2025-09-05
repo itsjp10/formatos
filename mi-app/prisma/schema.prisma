@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,50 +8,44 @@ datasource db {
 }
 
 model Usuario {
-  userID    String   @id @default(uuid())
-  name      String
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  role      String
-
-  formatos          Formato[]
+  userID            String             @id @default(uuid())
+  name              String
+  username          String             @unique
+  password          String
+  createdAt         DateTime           @default(now())
+  role              String
   firmas            Firma[]
+  formatos          Formato[]
+  formatoUsuarios   FormatoUsuario[]
   plantillas        PlantillaFormato[]
   formatosRecibidos Formato[]          @relation("FormatosRecibidos")
-
-  formatoUsuarios FormatoUsuario[]
 }
 
 model Formato {
-  formatoID  String   @id @default(uuid())
-  tipo       String
-  data       String
-  name       String
-  createdAt  DateTime @default(now())
-  publicLink String   @unique @default(cuid()) // Nuevo campo para compartir públicamente
-
-  usuarioId String
-  ownerID   Usuario @relation(fields: [usuarioId], references: [userID])
-
-  plantillaID String?
-  plantilla   PlantillaFormato? @relation("PlantillaDeFormato", fields: [plantillaID], references: [plantillaID])
-
-  firmas     Firma[] // Relación uno a muchos  
-  receptores Usuario[] @relation("FormatosRecibidos") // Usuarios que han recibido este formato
-
+  formatoID       String            @id @default(uuid())
+  tipo            String
+  data            String
+  createdAt       DateTime          @default(now())
+  usuarioId       String
+  name            String
+  plantillaID     String?
+  publicLink      String            @unique @default(cuid())
+  firmas          Firma[]
+  plantilla       PlantillaFormato? @relation("PlantillaDeFormato", fields: [plantillaID], references: [plantillaID])
+  ownerID         Usuario           @relation(fields: [usuarioId], references: [userID])
   formatoUsuarios FormatoUsuario[]
+  receptores      Usuario[]         @relation("FormatosRecibidos")
 }
 
 model FormatoUsuario {
   id        String  @id @default(uuid())
   userId    String
   formatoId String
-  creadoPor Boolean @default(false) // indica si es el autor original
-  user      Usuario @relation(fields: [userId], references: [userID])
+  creadoPor Boolean @default(false)
   formato   Formato @relation(fields: [formatoId], references: [formatoID])
+  user      Usuario @relation(fields: [userId], references: [userID])
 
-  @@unique([userId, formatoId]) // un usuario no puede recibir el mismo dos veces
+  @@unique([userId, formatoId])
 }
 
 model Firma {
@@ -65,24 +53,20 @@ model Firma {
   tipo      String
   imagenUrl String
   createdAt DateTime @default(now())
-
   usuarioId String
-  usuario   Usuario @relation(fields: [usuarioId], references: [userID])
-
   formatoId String?
   formato   Formato? @relation(fields: [formatoId], references: [formatoID])
+  usuario   Usuario  @relation(fields: [usuarioId], references: [userID])
 }
 
 model PlantillaFormato {
-  plantillaID String   @id @default(uuid())
+  plantillaID String    @id @default(uuid())
   nombre      String
   descripcion String?
-  estructura  Json // Campos configurables como labels, tipos, etc.
-  numSubfilas Int      @default(3) // <-- nuevo campo
-  createdAt   DateTime @default(now())
-
+  estructura  Json
+  createdAt   DateTime  @default(now())
   creadoPorId String
-  creadoPor   Usuario @relation(fields: [creadoPorId], references: [userID])
-
-  formatos Formato[] @relation("PlantillaDeFormato") // <--- Campo inverso
+  numSubfilas Int       @default(3)
+  formatos    Formato[] @relation("PlantillaDeFormato")
+  creadoPor   Usuario   @relation(fields: [creadoPorId], references: [userID])
 }

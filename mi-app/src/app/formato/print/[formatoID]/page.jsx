@@ -44,6 +44,34 @@ export default async function PrintFormatoPage({ params }) {
         if (col.subheaders?.length) return acc + (col.subheaders.length * 2);
         return acc + 2;
     }, 0);
+
+    function toDDMMYYYY(value) {
+        if (!value) return "";
+        const v = String(value).trim();
+
+        // Caso ya en dd/mm/aaaa
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
+            const [d, m, y] = v.split("/");
+            return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+        }
+        // Caso ISO aaaa-mm-dd
+        if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+            const [y, m, d] = v.split("-");
+            return `${d}/${m}/${y}`;
+        }
+        // Último intento: parsear con Date
+        const d = new Date(v);
+        if (!isNaN(d)) {
+            const dd = String(d.getDate()).padStart(2, "0");
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const yy = d.getFullYear();
+            return `${dd}/${mm}/${yy}`;
+        }
+        // Si no se reconoce, devolver tal cual para no reventar el render
+        return v;
+    }
+
+
     return (
 
         <div className="w-full">
@@ -175,32 +203,32 @@ export default async function PrintFormatoPage({ params }) {
                                             if (isSimpleField(header.label)) return null;
 
                                             if (isDateField(header.label)) {
-                                                    const cellValue = row[fullKey] || '';
+                                                const cellValue = row[fullKey] || '';
 
-                                                    return (
-                                                        <td
-                                                            key={`${hIndex}-${kIndex}`}
-                                                            className="border px-2 py-1 text-center"
-                                                            style={{ width: 85, minWidth: 85 }}
-                                                        >
-                                                            {cellValue ? (
-                                                                <input
-                                                                    type="date"
-                                                                    readOnly
-                                                                    value={cellValue}
-                                                                    className="w-full border-none outline-none"
-                                                                />
-                                                            ) : (
-                                                                <input
-                                                                    type="text"
-                                                                    readOnly
-                                                                    value=""
-                                                                    className="w-full border-none outline-none"
-                                                                />
-                                                            )}
-                                                        </td>
-                                                    );
-                                                }
+                                                return (
+                                                    <td
+                                                        key={`${hIndex}-${kIndex}`}
+                                                        className="border px-2 py-1 text-center"
+                                                        style={{ width: 85, minWidth: 85 }}
+                                                    >
+                                                        {cellValue ? (
+                                                            <input
+                                                                type="text"
+                                                                readOnly
+                                                                value={toDDMMYYYY(cellValue)}
+                                                                className="w-full border-none outline-none"
+                                                            />
+                                                        ) : (
+                                                            <input
+                                                                type="text"
+                                                                readOnly
+                                                                value=""
+                                                                className="w-full border-none outline-none"
+                                                            />
+                                                        )}
+                                                    </td>
+                                                );
+                                            }
 
                                             if (isSignatureField(header.label)) {
                                                 return (

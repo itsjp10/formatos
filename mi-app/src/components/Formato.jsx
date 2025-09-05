@@ -581,7 +581,7 @@ function Formato({ formatoID, tipoFormato, onGuardar, rol, firma, publicLink, is
                                                             className="border px-2 py-1 text-center"
                                                         >
                                                             <input
-                                                                type="date" // 👈 aquí el cambio
+                                                                type="date"
                                                                 value={row[fullKey] || ''}
                                                                 onChange={(e) => updateCell(rowIndex, fullKey, e.target.value)}
                                                                 className="w-full min-w-[65px] border-none outline-none"
