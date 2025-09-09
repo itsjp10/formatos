@@ -8,6 +8,7 @@
 # compilados de Next
 /.next
 /out
+.next/trace
 
 # Prisma generado
 /generated
